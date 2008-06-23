@@ -1,0 +1,929 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Getopt::Long qw( GetOptions HelpMessage VersionMessage :config bundling auto_version auto_help );
+use Data::Dumper;
+use DBI;
+$main::VERSION = "0.1";
+
+my $rh_options = parse_options();
+my ($masterpair, $command, $ra_parameters) = parse_commandline();
+my $metadata = get_metadata();
+
+if (!defined $masterpair) {
+	# no masterpair specified - display a list of masterpairs if there are any
+	# or a nice message if there aren't any
+	my $ra_masterpairs = $metadata->get_masterpair_names();
+	if (defined $ra_masterpairs && scalar @$ra_masterpairs > 0) {
+		print "The following masterpairs exist:\n\t" . join("\n\t", @$ra_masterpairs) . "\n";
+		exit(0);
+	} else {
+		print "No masterpairs exist.\n";
+		exit(1);
+	}
+}
+# a masterpair has been specified, so try and get information on it
+# this has two effects - it pre-fetches the cache and acts as a way of
+# determining whether the masterpair exists or not.
+my $rh_masterpair_info = $metadata->get_masterpair_info($masterpair);
+my $rhh_nodes_info = $metadata->get_nodes_info($masterpair);
+if (!defined $rh_masterpair_info) {
+	die "ERROR: The specified masterpair '$masterpair' does not exist.\n";
+}
+
+# used as a cache for ip information
+my $rhh_nodes_ip_info;
+
+# Execute command
+# TODO:  change command despatch to use a hashref of command name => sub name
+if ($command eq 'config') { config_command(); }
+elsif ($command eq 'status') { status_command(); }
+elsif ($command eq 'swap') { swap_command(); }
+elsif ($command eq 'set') { set_command(); }
+elsif ($command eq 'disable') { disable_command(); }
+elsif ($command eq 'fail') { fail_command(); }
+elsif ($command eq 'ipdown') { ipdown_command(); }
+elsif ($command eq 'ipup') { ipup_command(); }
+else {
+	# display an error if the command isn't recognised
+	HelpMessage(-exitval => 2, -msg => "ERROR:  The specified command does not exist.\n");
+}
+
+sub swap_command {
+	my $ip = $ra_parameters->[0];
+	if (defined $ip && ($ip ne 'read' and $ip ne 'write')) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  IP must be 'read' or 'write'");
+	}
+	# Create an array containing the IPs to be moved.  Slight overkill
+	# right now, but will make expanding the number of IPs much easier
+	# in the future.
+	my @ips;
+	if (defined $ip) {
+		@ips=($ip);
+	}
+	else {
+		@ips=('read','write');
+	}
+	# Get info on the first node and use that to determine where IPs need
+	# to be moved from/to unpleasant but effective - could do to be
+	# refactored at some point.
+	my @nodes = keys %$rhh_nodes_info;
+	my $rhh_first_node_ip_info = get_node_ip_info($nodes[0]);
+	foreach my $move_ip (@ips) {
+		my $rh_p = { ip => $move_ip };
+		if (defined $rhh_first_node_ip_info->{addresses}->{$rh_masterpair_info->{$move_ip.'_ip'}}) {
+			$rh_p->{from} = $nodes[0];
+		}
+		else {
+			$rh_p->{to} = $nodes[0];
+		}
+		ipmove($rh_p);
+	}
+
+}
+
+sub set_command {
+	my $ip = $ra_parameters->[0];
+	my $node = $ra_parameters->[1];
+	if (!defined $ip || !defined $node) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No IP and/or node specified for set command");
+	}
+	if ($ip ne 'read' and $ip ne 'write') {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  IP must be 'read' or 'write'");
+	}
+	if (!defined $rhh_nodes_info->{$node}) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No node '$node' exists for masterpair '$masterpair'");
+	}
+	my $rhh_node_ip_info = get_node_ip_info($node);
+	if (!defined $rhh_node_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}) {
+		ipmove({	ip	=> $ip,
+				to	=> $node,
+			});	
+	}
+	else {
+		print "INFO:  The $ip IP is already up on the $node node.\n";
+	}
+}
+
+sub disable_command {
+	my $node = $ra_parameters->[0];
+	if (!defined $node) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No node specified for disable command");
+	}
+	if (!defined $rhh_nodes_info->{$node}) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No node '$node' exists for masterpair '$masterpair'");
+	}
+	my $rhh_node_ip_info = get_node_ip_info($node);
+	my @ips_to_move;
+	foreach my $ip_addr (keys %{$rhh_node_ip_info->{addresses}}) {
+		push @ips_to_move, 'read' if ($ip_addr eq $rh_masterpair_info->{'read_ip'});
+		push @ips_to_move, 'write' if ($ip_addr eq $rh_masterpair_info->{'write_ip'});
+	}
+	if (@ips_to_move) {
+		foreach my $ip (@ips_to_move) {
+			ipmove({	ip	=> $ip,
+					from	=> $node,
+				});
+		}
+	}
+	else {
+		print "INFO:  No IPs on the $node node.\n";
+	}
+}
+
+sub fail_command {
+	my $node = $ra_parameters->[0];
+	if (!defined $node) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No node specified for fail command");
+	}
+	if (!defined $rhh_nodes_info->{$node}) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No node '$node' exists for masterpair '$masterpair'");
+	}
+	if (!defined $rh_options->{yes}) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  Fail command requires confirmation with --yes option");
+	}
+	# we shouldn't rely on being able to contact the failed node, so get
+	# IP information from the node that we'll be moving services to, and
+	# deduce what needs to be moved by the absence of those IPs on there.
+	my $to_node = other_node($node);
+	my $rhh_node_ip_info = get_node_ip_info($to_node);
+	# TODO: If we can't get IP information from the node that we're going
+	# TODO: to be moving stuff to, we ought to fail as there's no way we
+	# TODO: will be able to shift stuff from the failed node.
+	my $rh_ips_to_move = { read => 1, write => 1 };
+	foreach my $ip_addr (keys %{$rhh_node_ip_info->{addresses}}) {
+		delete $rh_ips_to_move->{'read'} if ($ip_addr eq $rh_masterpair_info->{'read_ip'});
+		delete $rh_ips_to_move->{'write'} if ($ip_addr eq $rh_masterpair_info->{'write_ip'});
+	}
+	if (keys %$rh_ips_to_move) {
+		foreach my $ip (keys %$rh_ips_to_move) {
+			ipmove({	ip			=> $ip,
+					to			=> $to_node,
+					ignore_from_errors	=> 1,	
+				});
+		}
+	}
+	else {
+		print "INFO:  All IPs are on the $to_node node.  No action required to fail the $node node.\n";
+	}
+}
+
+sub ipdown_command {
+	my $ip = $ra_parameters->[0];
+	if (!defined $ip) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No IP specified for ipdown command");
+	}
+	if ($ip ne 'read' and $ip ne 'write') {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  IP must be 'read' or 'write'");
+	}
+	my $node_with_ip;
+	my $interface_with_ip;
+	foreach my $node (keys %$rhh_nodes_info) {
+		my $rhh_ip_info = get_node_ip_info($node);
+		if (defined $rhh_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}) {
+			$node_with_ip = $node;
+			$interface_with_ip = $rhh_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}->{interface};
+			last;
+		}
+	}
+	if (!defined $node_with_ip) {
+		die "ERROR:  No node currently has the $ip IP\n";
+	}
+	print "Taking down $ip IP on interface $interface_with_ip on node $node_with_ip\n" if $rh_options->{verbose};
+	ipdown({	node		=> $node_with_ip,
+			ip		=> $ip,
+			interface	=> $interface_with_ip,
+		});
+	# TODO:  optionally verify if the interface has indeed gone down
+}
+
+sub ipup_command {
+	my $ip = $ra_parameters->[0];
+	my $node = $ra_parameters->[1];
+	if (!defined $ip || !defined $node) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No IP and/or node specified for ipup command");
+	}
+	if ($ip ne 'read' and $ip ne 'write') {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  IP must be 'read' or 'write'");
+	}
+	if (!defined $rhh_nodes_info->{$node}) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No node '$node' exists for masterpair '$masterpair'");
+	}
+	my $node_with_ip;
+	my $interface_with_ip;
+	foreach my $node (keys %$rhh_nodes_info) {
+		my $rhh_ip_info = get_node_ip_info($node);
+		if (defined $rhh_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}) {
+			$node_with_ip = $node;
+			$interface_with_ip = $rhh_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}->{interface};
+			last;
+		}
+	}
+	if (defined $node_with_ip) {
+		die "ERROR:  The $ip IP is already up on $node_with_ip on interface $interface_with_ip\n";
+	}
+	print "Bringing up $ip IP on node $node\n" if $rh_options->{verbose};
+	ipup({		node		=> $node,
+			ip		=> $ip,
+		});
+	# TODO: optionally verify if the interface has indeed been brought up
+}
+
+sub config_command {
+	print "MASTERPAIR: $masterpair\n\t";
+	print join("\n\t", map { "$_: $rh_masterpair_info->{$_}" } keys %$rh_masterpair_info);
+	print "\n";
+	foreach my $node (keys %$rhh_nodes_info) {
+		print "NODE: $node\n\t";
+		print join("\n\t", map { "$_: $rhh_nodes_info->{$node}->{$_}" } keys %{$rhh_nodes_info->{$node}});
+		print "\n";
+	}
+}
+
+sub status_command {
+	print "MASTERPAIR: $masterpair\n";
+	my @warnings;
+	my %ip_count;
+	$ip_count{read}=0;
+	$ip_count{write}=0;
+	foreach my $node (keys %$rhh_nodes_info) {
+		if (defined $rhh_nodes_info->{$node}->{disabled} && $rhh_nodes_info->{$node}->{disabled}) {
+			# the node is disabled, so don't attempt to get any information for it
+			print "NODE: $node disabled\n";
+		}
+		else {
+			my @info;
+			my $rhh_ip_info = get_node_ip_info($node);
+			my $node_dbh = get_node_dbh($node);
+			if (defined $rhh_ip_info) {
+				if (defined $rhh_ip_info->{addresses}->{$rh_masterpair_info->{read_ip}}) {
+					push @info, "has read IP";
+					if (!defined $node_dbh) { push @warnings, "$node has read IP, but couldn't connect to MySQL on that node"; }
+					$ip_count{read}++;
+				}
+				if (defined $rhh_ip_info->{addresses}->{$rh_masterpair_info->{write_ip}}) {
+					push @info, "has write IP";
+					if (!defined $node_dbh) { push @warnings, "$node has write IP, but couldn't connect to MySQL on that node"; }
+					$ip_count{write}++;
+				}
+			}
+			else {
+				push @info, "couldn't ssh";
+			}
+			if (defined $node_dbh) {
+				my ($read_only) = $node_dbh->selectrow_array('SELECT @@read_only');
+				if ($read_only) {
+					push @info, "is read-only";
+					if (defined $rhh_ip_info->{addresses}->{$rh_masterpair_info->{write_ip}}) {
+						push @warnings, "MySQL server on write IP is read only";
+					}
+				}
+				else {
+					push @info, "is writable";
+					if (defined $rhh_ip_info->{addresses}->{$rh_masterpair_info->{read_ip}}) {
+						push @warnings, "MySQL server on read IP is writable";
+					}
+				}
+				my $rh_slave_status = $node_dbh->selectrow_hashref('SHOW SLAVE STATUS');
+				if (!defined $rh_slave_status) {
+					push @warnings, "Couldn't get replication info from node $node";
+				}
+				else {
+					if ($rh_slave_status->{Slave_SQL_Running} eq 'Yes' && $rh_slave_status->{Slave_IO_Running} eq 'Yes') {
+						push @info, "replication running, $rh_slave_status->{Seconds_Behind_Master}s delay";
+					}
+					else {
+						push @warnings, "Replication not running on $node";
+					}
+				}
+			}
+			else {
+				push @info, "couldn't connect to MySQL";
+			}
+			print "NODE: $node " . join (', ', @info) . "\n";
+		}
+	}
+	if ($ip_count{read}==0) { push @warnings, "No node has the read IP"; }
+	if ($ip_count{write}==0) { push @warnings, "No node has the write IP"; }
+	if ($ip_count{read}>1) { push @warnings, "Read IP up on more than one node"; }
+	if ($ip_count{write}>1) { push @warnings, "Write IP up on more than one node"; }
+	if (@warnings) {
+		foreach my $w (@warnings) { print "WARNING: $w\n"; }
+	}
+}
+
+sub ipdown {
+	# ipdown takes a single compulsory parameter, which is a reference to a hash.
+	# the "node" key is compulsory here.  "interface" is compulsory
+	# for linux/solaris, the interface is assumed to include the colon and logical interface number
+	# for BSD, the IP name ('read/write') is required also - we need that in order to take the alias down
+	# TODO: if interface it's not specified, an attempt should be made to work it out
+	# Returns a scalar containing the output from the ifconfig command (probably empty string)
+	# if successful, undef if the ifconfig command to take the interface down failed.
+	# TODO:  ensure we don't take down an interface which ssh is bound to - that would be bad!
+	my $rh_params = shift || die "INTERNAL ERROR: No parameters hashref supplied to sub ipdown";
+	my $node = $rh_params->{node} || die "INTERNAL ERROR:  No node specified to sub ipdown";
+	my $interface = $rh_params->{interface} || die "INTERNAL ERROR:  No interface specified to sub ipdown";
+	# if there's a : in the interface name, we must be on a Linux/Solaris type system
+	# if there isn't a : then we must be on a BSD-type system
+	# this makes an assumption that the flipper-controlled IPs are always aliases
+	my $bsd_style = 1;
+	$bsd_style = 0 if ($interface=~/:/);
+	my $path_to_ifconfig = config('path_to_ifconfig', $node);
+	if ($bsd_style) {
+		die "INTERNAL ERROR:  No IP specified to sub ipdown, required for BSD style operating systems" if (!defined $rh_params->{ip});
+		my $ip = $rh_masterpair_info->{$rh_params->{ip}.'_ip'};
+		return node_ssh_command($node, "$path_to_ifconfig/ifconfig $interface inet $ip -alias", 1);
+	}
+	else {
+		return node_ssh_command($node, "$path_to_ifconfig/ifconfig $interface down", 1);
+	}
+}
+
+sub ipup {
+	# ipup brings up an IP on a particular node.  it takes a single compulsory parameter, which is a reference to a hash.
+	# the "node" and "ip" keys are compulsory
+	# "interface" is optional.  if interface is specified, that will be used
+	# if interface is not specified, configuration will be searched for it
+	# if there is no configuration for the interface, and there's only one interface on the machine, that one will be used
+	# "interface" should not include the logical interface number for any OS.
+	my $rh_params = shift || die "INTERNAL ERROR: No parameters hashref supplied to sub ipup";
+	my $node = $rh_params->{node} || die "INTERNAL ERROR:  No node specified to sub ipup";
+	my $ip = $rh_params->{ip} || die "INTERNAL ERROR:  No IP specified to sub ipup";
+	my $rhh_node_ip_info = get_node_ip_info($node) || die "INTERNAL ERROR:  Couldn't get IP information from node $node";
+	my $ip_addr = $rh_masterpair_info->{$rh_params->{ip}.'_ip'};
+	my $path_to_ifconfig = config('path_to_ifconfig', $node);
+	# determine interface to use
+	my ($interface) = interface_for_node($node, $rh_params->{interface});
+	print "Using interface $interface on $node to bring up $ip IP.\n" if $rh_options->{verbose};
+	my $netmask = $rh_masterpair_info->{netmask};
+	if ($rhh_node_ip_info->{os}=~/(Linux|SunOS)/) {
+		# SVR4-based operating system on the node
+		# TODO: add broadcast IP in here
+		return node_ssh_command($node, "$path_to_ifconfig/ifconfig $interface inet $ip_addr netmask $netmask up", 1);
+	}
+	else {
+		# BSD-based operating system on the node
+		# TODO: add broadcast IP in here
+		return node_ssh_command($node, "$path_to_ifconfig/ifconfig $interface inet $ip_addr netmask $netmask alias", 1);
+	}
+}
+
+sub ipmove {
+	# Move an IP from one node to another.  Parameters are the IP, plus the name
+	# of the node that the IP is being moved from and/or to.
+	my $rh_params = shift || die "INTERNAL ERROR: No parameters hashref supplied to sub ipmove ";
+	my $ip = $rh_params->{ip} || die "INTERNAL ERROR: No IP given in params hashref to sub ipmove ";
+	my $to = $rh_params->{to};
+	my $from = $rh_params->{from};
+	my $ignore_from_errors = $rh_params->{ignore_from_errors} || 0;
+	if (!defined $to && !defined $from) {
+		die "INTERNAL ERROR: Neither to or from nodes given to sub ipmove ";
+	}
+	my @nodes = keys %$rhh_nodes_info;
+	if (defined $to && !defined $from) {
+		$from = other_node($to);
+	}
+	if (defined $from && !defined $to) {
+		$to = other_node($from);
+	}
+	print "Moving $ip from $from to $to\n" if $rh_options->{verbose};
+	my $from_interface;
+	my $old_write_dbh;
+	my $new_write_dbh;
+	my $rhh_from_ip_info = get_node_ip_info($from);
+	if (defined $rhh_from_ip_info) {
+		$from_interface = $rhh_from_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}->{interface};
+	} else {
+		# We couldn't determine the interface that the IP is running
+		# on, so unless we're set to ignore_from_errors, we should give
+		# up at this point, as we might not be able to bring the IP
+		# down safely.
+		if (!$ignore_from_errors) {
+			print "ERROR: Couldn't determine interface on $from node to bring down IP.  $ip IP won't be moved.\n";
+			return;
+		} else {
+			print "WARNING: Couldn't determine interface on $from node to bring down IP.\n";
+			print "WARNING: Won't attempt to take down $ip IP on $from node.\n";
+		}
+	}
+	if ($ip eq 'write') {
+		# make the current write node read only
+		$old_write_dbh = get_node_dbh($from);
+		my $synced = 0;
+		# How should we handle errors etc. here?
+		# CONN SYNC IG_FR_ER ACTION
+		#  y    y      na    continue
+		#  y    n      n     set r/w, error, return   
+		#  y    n      y     warn, continue, leave r/o to protect repl when failed host comes back
+		#  n    na     n     error, return
+		#  n    na     y     warn, continue
+		if (defined $old_write_dbh) {
+			$old_write_dbh->do('SET GLOBAL read_only = 1');
+			# wait for replication to catch up
+			$synced = sync_replication({		master		=> $from,
+								slave		=> $to,
+							});
+			if (!$synced) {
+				if ($ignore_from_errors) {
+					print "WARNING:  Replication could not be synced.\n";
+				} else {
+					print "ERROR: Replication could not be synced.  Write IP won't be moved.\n";
+					$old_write_dbh->do('SET GLOBAL read_only = 0');
+					return;
+				}
+			}
+		}
+		else {
+			if ($ignore_from_errors) {
+				print "WARNING: Couldn't connect to MySQL server on $from node, so couldn't sync replication.\n";
+			}
+			else {
+				print "ERROR: Couldn't connect to MySQL server on $from node, so couldn't sync replication.\n";
+				return;
+			}
+		}
+		$new_write_dbh = get_node_dbh($to);
+		if (!defined $new_write_dbh) {
+			print "ERROR: Couldn't connect to MySQL server on $to node.  Write IP won't be moved.\n";
+			return;
+		}
+
+	}
+	my $ipdown_success = ipdown({	ip		=> $ip,
+					interface	=> $from_interface,
+					node		=> $from,
+				});
+	# If taking the IP down failed, and we're not set to ignore errors,
+	# report an error and return.  If we are set to ignore errors, just
+	# display a warning and continue.
+	if (!defined $ipdown_success) {
+		if ($ignore_from_errors) {
+			print "WARNING: Couldn't bring down $ip IP on $from node.\n";
+		}
+		else {
+			print "ERROR: Couldn't bring down $ip IP on $from node.\n";
+			return;
+		}
+	}
+	if ($ip eq 'write') {
+		# Make the new write node read/write
+		# We've already verified that we have a connection to the DB
+		$new_write_dbh->do('SET GLOBAL read_only = 0');
+	}
+	my $ipup_success = ipup({		node		=> $to,
+						ip		=> $ip,
+				});
+	if (defined $ipup_success) {
+		sendarp({	node		=> $to,
+				ip		=> $ip,
+			});
+	}
+	else {
+		print "ERROR: Couldn't bring up $ip IP on $to node. Will bring $ip IP back up on $from node.\n";
+		my $ipup_success = ipup({		node		=> $from,
+							ip		=> $ip,
+					});
+	}
+}
+
+sub sync_replication {
+	my $rh_params = shift || die "INTERNAL ERROR:  No parameters hashref supplied to sub sync_replication ";
+	my $master_node = $rh_params->{master};
+	my $slave_node = $rh_params->{slave};
+	if (!defined $master_node && !defined $slave_node) {
+		die "INTERNAL ERROR:  Neither master nor slave nodes supplied to sub sync_replication ";
+	}
+	my @nodes = keys %$rhh_nodes_info;
+	if (defined $master_node && !defined $slave_node) {
+		$slave_node = other_node($master_node);
+	}
+	if (defined $slave_node && !defined $master_node) {
+		$master_node = other_node($slave_node);
+	}
+	my $master_dbh = get_node_dbh($master_node);
+	my $slave_dbh  = get_node_dbh($slave_node);
+	my $master_sth = $master_dbh->prepare("SHOW MASTER STATUS");
+	my $slave_sth  = $slave_dbh->prepare("SHOW SLAVE STATUS");
+	$master_sth->execute;
+	my $master_status = $master_sth->fetchrow_hashref;
+	print "Master:  File $master_status->{File} Position $master_status->{Position}\n" if $rh_options->{debug};
+	# TODO: extend this to optionally use Time::HiRes if available (now part of core as of 5.8.7)
+	my $retry_limit = 10;
+	my $retry_count = 0;
+	while($retry_count < $retry_limit) {
+		$slave_sth->execute;
+		my $slave_status = $slave_sth->fetchrow_hashref;
+		print "Slave: File $slave_status->{Relay_Master_Log_File} Position $slave_status->{Exec_Master_Log_Pos}\n" if $rh_options->{debug};
+		if($master_status->{File} eq $slave_status->{Relay_Master_Log_File} && $master_status->{Position} == $slave_status->{Exec_Master_Log_Pos}) {
+			return 1;
+		}
+		sleep(1);
+		$retry_count++;
+	}
+	return 0;
+}
+
+sub sendarp {
+	my $rh_params = shift || die "INTERNAL ERROR:  No parameters hashref supplied to sub sendarp ";
+	my $node = $rh_params->{node} || die "INTERNAL ERROR:  No node supplied to sub sendarp ";
+	my $ip = $rh_params->{ip} || die "INTERNAL ERROR:  No IP supplied to sub sendarp ";
+	my $send_arp_command = config('send_arp_command', $node);
+	# note that the IP information returned by this call to get_node_ip_info will probably be out of date
+	# at this point.  we're not using the IP info here though, just the operating system information
+	my $rhh_node_ip_info = get_node_ip_info($node) || die "INTERNAL ERROR:  Couldn't get IP information from node $node";
+	if ($send_arp_command eq 'UNCONFIGURED') {
+		if ($rhh_node_ip_info->{os} eq 'Linux') {
+			print "WARNING:  Node is running linux, but no send_arp_command is configured.  See documentation.\n";
+		}
+	}
+	else {
+		# prepare the following variables for double-quoting into sendarp_command
+		# interface, ip, broadcast addr, netmask
+		my ($dummy, $sendarp_interface) = interface_for_node($node, $rh_params->{interface});
+		my $sendarp_ip = $rh_masterpair_info->{$rh_params->{ip}.'_ip'};
+		my $sendarp_broadcast = $rh_masterpair_info->{'broadcast'} || '';
+		my $sendarp_netmask = $rh_masterpair_info->{'netmask'} || '';
+		print "DEBUG: Unquoted send ARP command $send_arp_command\n" if $rh_options->{debug};
+		my $cmd_to_execute = eval _quote($send_arp_command);
+		print "DEBUG: Executing send ARP command $cmd_to_execute\n" if $rh_options->{debug};
+		my $result = node_ssh_command($node, $cmd_to_execute, 1);
+		print "ERROR: Couldn't execute send ARP commmand $cmd_to_execute\n" if (!defined $result); 
+	}
+}
+
+sub _quote { qq!"$_[0]"! }
+
+sub interface_for_node {
+	# determine which interface to use for a particular node
+	# takes one compulsory and one optional parameter.
+	# compulsory parameter is the node name.  optional parameter is a physical interface name eg. fxp0, eth0.
+	# if a physical interface is supplied, we'll use that one
+	# if a physical interface is not supplied, we'll work out which physical interface to use
+	# (this assumes there's only one on the node - if there's > 1, it needs configuring in the metadata)
+	# once we've identified the interface, we'll determine if it needs a logical interface number and if it does, we'll find the next one
+	# returns an array with two elements - the first is the interface name including logical interface number, second is physical interface name
+	# (first can be used for bringing up/down aliases, second can be used for sending arps)
+	my $node = shift || die "INTERNAL ERROR:  No node specified to sub interface_for_node ";
+	my $interface = shift;
+	my $rhh_node_ip_info = get_node_ip_info($node,1) || die "INTERNAL ERROR:  Couldn't get IP information from node $node ";
+	if (!defined $interface) {
+		# we've not been given an interface in the parameters to this subroutine.  is it in the metadata?
+		$interface = config('interface', $node);
+		if ($interface eq 'UNCONFIGURED') {
+			# it's not in the metadata.  if the node only has one interface, we can use that
+			# if not, throw an error as it will have to be configured in metadata
+			my $candidate_if;
+			foreach my $if (keys %{$rhh_node_ip_info->{interfaces}}) {
+				$if=~s/:\d+$//;
+				if (!defined $candidate_if) {
+					$candidate_if=$if;
+				}
+				else {
+					if ($if ne $candidate_if) {
+						die "ERROR:  Couldn't determine which interface to use on node $node.  This needs configuring in metadata.\n";
+					}
+				}
+			}
+			# we've only got one interface, so use it
+			$interface = $candidate_if;
+		}
+	}
+	my $interface_with_logic = $interface;
+	if ($rhh_node_ip_info->{os}=~/(Linux|SunOS)/) {
+		# SVR4-based operating system on the node
+		# need to work out first available logical interface number
+		my %taken_logical_interfaces;
+		foreach my $if (keys %{$rhh_node_ip_info->{interfaces}}) {
+			if ($if=~/^$interface:(\d+)$/) {
+				$taken_logical_interfaces{$1}=1;
+			}
+		}
+		my $logical_interface = 0;
+		for (my $i=0; $i < 32767; $i++) {
+			if (!defined $taken_logical_interfaces{$i}) {
+				$logical_interface=$i;
+				last;
+			}
+		}
+		$interface_with_logic="$interface:$logical_interface";
+	}
+	return ($interface_with_logic, $interface);
+}
+
+sub get_node_ip_info {
+	# Populates a cache with a structure containing information about
+	# the operating system and IPs on a node.  Returns a reference to a
+	# hash.  If the information cannot be ascertained, returns undef.
+	# TODO:  make this work on HP-UX which has no -a switch to ifconfig.
+	# TODO:  need to do netstat -in to get interface names and then ifconfig <ifname>
+	my $node = shift;
+	my $force_refresh = shift || 0;
+	if (!defined $rhh_nodes_ip_info->{$node} || $force_refresh) {
+		my $path_to_ifconfig = config('path_to_ifconfig', $node);
+		# combine these two together to remove an extra ssh round trip
+		my $uname_and_ifconfig_output = node_ssh_command($node, "\"uname -s;$path_to_ifconfig/ifconfig -a\"");
+		if (defined $uname_and_ifconfig_output) {
+			my $rhh_ip_info;
+			($rhh_ip_info->{os}) = ($uname_and_ifconfig_output=~/^([^\n]+)\n/ms);
+			# split the output of ifconfig into one element per interface
+			my $interface;
+			foreach my $line (split(/\n/, $uname_and_ifconfig_output)) {
+				if ( my ($match_if) = ($line =~/(^\w+(?:\d)?(?:\:\d)?)/) ) {
+					# line not starting with whitespace contains an interface definition at the start
+					# remove the interface definition from the line, and set the current interface
+					$line =~s/\w+\d(\:)?\s+//;
+					$interface=$match_if;
+				}
+				if (my ($ip) = ($line=~/inet (?:addr\:)?(\d+(?:\.\d+){3})/)) {
+					# this line has an IP address definition.
+					next if ($ip eq '127.0.0.1');
+					my ($netmask) = ($line=~/mask[\s\:]([\w\.]+)/ig);
+					$rhh_ip_info->{addresses}->{$ip}->{interface} = $interface;
+					$rhh_ip_info->{addresses}->{$ip}->{netmask} = $netmask;
+					$rhh_ip_info->{interfaces}->{$interface}->{$ip}->{netmask} = $netmask;
+				}
+			}
+			$rhh_nodes_ip_info->{$node} = $rhh_ip_info;
+		}
+		else {
+			print "ERROR:  Couldn't get IP / OS information for $node\n";
+			$rhh_nodes_ip_info->{$node} = undef;	
+		}
+	}
+	return $rhh_nodes_ip_info->{$node};
+}
+
+sub node_ssh_command {
+	# Return the result of the specified command executed on the given
+	# host, executed with superuser priv escalation via sudo if required.
+	# Returns undef if the command failed.
+	my $node = shift || die "INTERNAL ERROR:  No node passed to sub node_ssh_command ";
+	my $command = shift || die "INTERNAL ERROR:  No command passed to sub node_ssh_command ";
+	my $requires_root = shift || 0;
+	# determine which user we should use to ssh to the node
+	my $ssh_user = config('ssh_user', $node);
+	# If the ssh_ip node variable is set, use that to ssh to the host.
+	# Useful if ssh bound to different IP than mysql.
+	my $ssh_ip = defined $rhh_nodes_info->{$node}->{ssh_ip} ? $rhh_nodes_info->{$node}->{ssh_ip} : $rhh_nodes_info->{$node}->{ip};
+	if ($requires_root) {
+		# this is a command which requires superuser privileges to execute
+		# if use_sudo is set, add the sudo command in to the command
+		my $use_sudo = config('use_sudo', $node);
+		if ($use_sudo) {
+			$command = "sudo $command";
+		}
+	}
+	print "DEBUG:  Executing ssh -l $ssh_user $ssh_ip $command\n" if $rh_options->{debug};
+	# TODO:  Error reporting can be improved here by using IPC::Open3 to
+	# capture STDERR as well as STDOUT from the external ssh command
+	my $result= `ssh -o "ConnectTimeout 10" -l $ssh_user $ssh_ip $command`;
+	if ($?) {
+		print "ERROR:  Error occurred when executing ssh -l $ssh_user $ssh_ip $command\n";
+		return;
+	}
+	else {
+		return $result;	
+	}
+}
+
+sub get_node_dbh {
+	# Return a database handle to the given node.  Uses connect_cached
+	# in order to keep the number of connections tidy and reconnects if
+	# necessary.  Returns undef if no database handle could be created.
+	my $node = shift || die "INTERNAL ERROR:  No node name specified to sub get_node_dbh ";
+	my $user=config('mysql_user', $node);
+	my $password=config('mysql_password', $node);
+	my $port=config('mysql_port', $node);
+	my $host=$rhh_nodes_info->{$node}->{ip};
+	my $dbh = DBI->connect_cached("DBI:mysql:host=$host;port=$port", $user, $password, { PrintError => 0, RaiseError => 0});
+	if (!defined $dbh) {
+		print "ERROR: Couldn't connect to database server on $node.  Error was \"" . $DBI::errstr . "\"\n";
+		return;
+	}
+	else {
+		return $dbh;
+	}
+}
+
+sub other_node {
+	# given a node, return the other node
+	my $node = shift || die "INTERNAL ERROR:  No node name specified to sub other_node ";
+	my @nodes = keys %$rhh_nodes_info;
+	if ($node eq $nodes[0]) {
+		return $nodes[1];
+	}
+	if ($node eq $nodes[1]) {
+		return $nodes[0];
+	}
+	die "INTERNAL ERROR: Node $node specified to sub other_node isn't one of the two nodes ($nodes[0] and $nodes[1]) ";
+}
+
+sub config {
+	# Determine the value for a given configuration variable name.
+	# This is done according to the following rules:
+	# 1.  If there is a value specified for the given node, use that.
+	# 2.  If there is one specified for the masterpair, use that.
+	# 3.  If there isn't one specified for node or masterpair, use the default.
+	my $variable = shift || die "INTERNAL ERROR:  No configuration variable name given to sub config ";
+	my $node = shift || die "INTERNAL ERROR:  No node name given to sub config ";
+	my $rh_defaults = {	'path_to_ifconfig'	=> '/sbin',
+				'ssh_user'		=> 'root',
+				'use_sudo'		=> 0,
+				'mysql_user'		=> 'rw',	# TODO: change this for release to 'root'
+				'mysql_password'	=> '',
+				'mysql_port'		=> 3306,
+				'interface'		=> 'UNCONFIGURED',
+				'send_arp_command'	=> 'UNCONFIGURED',
+	};
+	die "INTERNAL ERROR:  Unknown configuration variable name $variable given to sub config " if (!defined $rh_defaults->{$variable});
+	my $return_value;
+	if (defined $node && defined $rhh_nodes_info->{$node}->{$variable}) { $return_value = $rhh_nodes_info->{$node}->{$variable}; }
+	elsif (defined $rh_masterpair_info->{$variable}) { $return_value = $rh_masterpair_info->{$variable}; }
+	elsif (defined $rh_defaults->{$variable}) { $return_value = $rh_defaults->{$variable}; }
+	return $return_value;
+}
+
+sub parse_options {
+	# Get options from my.cnf file and prepend them to current @ARGV
+	# This means that options explicitly set on the command line will
+	# override those from the my.cnf file.
+	# TODO:  should this call to my_print_defaults fail silently?
+	my $defaults = `my_print_defaults flipper`;
+	if (defined $defaults) {
+		unshift @ARGV, split(/\n/, $defaults);
+	}
+	# Parse the options from my.cnf and the command line.  If the same option
+	# appears more than once, Getopt::Long will use the last one - so
+	# explicitly specified options will override those from my.cnf.
+	my $rh_options = {};
+	GetOptions($rh_options,	'metadata|m=s',
+				'username|u=s',
+				'password|p=s',
+				'verbose|v',
+				'debug|d',
+				'yes|y',
+	);
+	# At this stage, we MUST have a DSN for metadata, so raise an error
+	# if we haven't got one.
+	if (!defined $rh_options->{metadata}) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No metadata source specified");
+	}
+	return $rh_options;
+}
+
+sub parse_commandline {
+	# Get masterpair, command and any parameters from the command line.
+	my $masterpair = shift @ARGV;
+	my $command = shift @ARGV;
+	my @parameters = @ARGV;
+	# If a masterpair has been specified, but no command has been given,
+	# then die with an appropriate error and print usage information.
+	if (defined $masterpair && !defined $command) {
+		HelpMessage(-exitval => 2, -msg => "ERROR:  No command specified");
+	}
+	return ($masterpair, $command, \@parameters);
+}
+
+sub get_metadata {
+	# Metadata locations are denoted by a DBI DSN-type string.  Text
+	# before the first colon in the string denotes which metadata
+	# handling module is to be used to get the metadata.  The rest of
+	# the DSN is ignored by the main script but is passed to the
+	# metadata handling module.
+	my ($metadata_type) = ($rh_options->{metadata}=~/^([^:]+):/g);
+	# Determine which metadata handling module to use and attempt to use
+	# the module.  An error at this stage either indicates that the
+	# module doesn't exist or there's a compile time error in the module.
+	# We assume a bug-free module at this stage and report that the
+	# module doesn't exist.
+	my $metadata_module = 'Flipper::Metadata::' . $metadata_type;
+	eval "use $metadata_module";
+	die "ERROR: No metadata handling module exists for type $metadata_type.  Check the metadata DSN is correct.\n" if $@;
+	# Attempt to create a new metadata object.  If we can't create the
+	# object then we need to die with an appropriate error.
+	my $metadata_object = $metadata_module->new(	{	dsn		=> $rh_options->{metadata},
+								username	=> $rh_options->{username},
+								password	=> $rh_options->{password},
+							}
+	);
+	die "ERROR: Couldn't create metadata object for type $metadata_type.  Check the metadata DSN is correct.\n" if (!defined $metadata_object);
+	# If we've been passed the debug option, then set the debug option
+	# on the metadata module as well.
+	if (defined $rh_options->{debug}) {
+		$metadata_object->set_debug(1);
+	}
+	return $metadata_object;
+}
+
+=head1 NAME
+
+flipper - MySQL master pair failover manager
+
+=head1 SYNOPSIS
+
+flipper [options] [<masterpair> <command> [<parameters>]]
+
+Options:
+
+	--help, -?		Show this help and exit
+	--version		Display version and exit
+	--verbose, -v		Turn on verbose mode
+	--debug, -d		Turn on debug mode
+	--metadata, -m		DSN for connection to metadata
+	--username, -u		Username for connection to metadata
+	--password, -p		Password for connection to metadata
+	--yes, -y		Yes, go ahead with potentially
+				dangerous operations
+
+Options can also be specified in a C<flipper> section of my.cnf.
+
+Commands and Parameters:
+
+	config			Show configuration
+	status			Show status
+	swap [<ip>]		Swap node for IP(s)
+	set <ip> <node>		Ensures IP is running on node
+	disable <node>		Move IP(s) away from node
+	fail <node>		Move IP(s) away from failed node
+	ipdown <ip>		Take down IP
+	ipup <ip> <node>	Bring up IP
+
+If no masterpair is specified, all available masterpairs will
+be listed.
+
+=head1 COMMANDS
+
+=head2 config
+
+Displays the configuration for the given masterpair.
+
+=head2 status
+
+Displays the current status
+
+=head2 swap
+
+Takes one optional parameter, which is the name of the IP that you wish to
+move to the other node - either "read" or "write".
+
+If that parameter isn't given, it'll swap both the "read" and "write" IPs.
+
+=head2 set
+
+Takes two compulsory parameters - the name of an IP and the name of a
+node.
+
+Ensures that the given IP is on the given node - if the IP is on the
+other node, it will be moved.
+
+=head2 disable
+
+Takes one compulsory parameter, which is the name of a node.
+
+All IPs running on this node will be moved to the other node.
+
+=head2 fail
+
+Takes one compulsory parameter, which is the name of a node.
+
+Similar to disable, but the given node is assumed to have suffered an
+external permanent or semi-permanent failure.  Any errors encountered
+whilst trying to bring disable the failed node will be ignored.
+
+As this can potentially leave the masterpair in an inconsistent state, the
+--yes command line option is required in order for a fail operation to
+proceed.
+
+=head2 ipdown
+
+This should not be used under normal circumstances, as it does not handle 
+replication synchronisation.  Use the swap, set, disable and fail commands
+instead.
+
+Takes one compulsory parameter, which is the name of the IP you wish to take
+down - either "read" or "write".
+
+The IP will be taken down from whichever node has it.  It will not be moved
+to the other node - use the swap command for that.
+
+An error will occur if the IP is already down.
+
+=head2 ipup
+
+This should not be used under normal circumstances, as it does not handle
+replication synchronisation.  Use the swap, set, disable and fail commands
+instead.
+
+Takes two compulsory parameters, the first is the name of the IP you wish to
+bring up - either "read" or "write" - and the second is the name of the node
+which is to have the IP.
+
+The IP will be brought up on the specified node.  If the write IP is being
+brought up on a read only server, an attempt will be made to change the
+status of that server to read/write.  If this attempt fails, the write IP
+will still be brought up.
+
+An error will occur if the IP is already up on a node.
+
+=cut
