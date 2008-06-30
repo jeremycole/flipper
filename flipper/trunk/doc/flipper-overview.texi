@@ -1,0 +1,11 @@
+@node   Overview
+@chapter Flipper Overview
+
+Flipper is a tool for managing pairs of MySQL nodes (servers) arranged in a master-master replication formation.
+
+A pair of nodes arranged like this is known as a masterpair.  
+
+@section IP addresses
+@cindex ip addresses
+
+The nodes will have their own IP addresses.  Additionally, two further IP addresses are provided which can be moved between the nodes by flipper - one for write access to MySQL, one for read access to MySQL.
