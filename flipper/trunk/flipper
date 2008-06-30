@@ -155,6 +155,7 @@ sub fail_command {
 		delete $rh_ips_to_move->{'read'} if ($ip_addr eq $rh_masterpair_info->{'read_ip'});
 		delete $rh_ips_to_move->{'write'} if ($ip_addr eq $rh_masterpair_info->{'write_ip'});
 	}
+	print "INFO:  Will move " . join (' and ', keys %$rh_ips_to_move) . " IPs from $node\n" if $rh_options->{verbose};
 	if (keys %$rh_ips_to_move) {
 		foreach my $ip (keys %$rh_ips_to_move) {
 			ipmove({	ip			=> $ip,
@@ -387,10 +388,11 @@ sub ipmove {
 	if (defined $from && !defined $to) {
 		$to = other_node($from);
 	}
-	print "Moving $ip from $from to $to\n" if $rh_options->{verbose};
+	print "INFO: Moving $ip from $from to $to\n" if $rh_options->{verbose};
 	my $from_interface;
 	my $old_write_dbh;
 	my $new_write_dbh;
+	print "About to get IP info from $from\n" if $rh_options->{debug};
 	my $rhh_from_ip_info = get_node_ip_info($from);
 	if (defined $rhh_from_ip_info) {
 		$from_interface = $rhh_from_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}->{interface};
@@ -450,20 +452,24 @@ sub ipmove {
 		}
 
 	}
-	my $ipdown_success = ipdown({	ip		=> $ip,
-					interface	=> $from_interface,
-					node		=> $from,
-				});
-	# If taking the IP down failed, and we're not set to ignore errors,
-	# report an error and return.  If we are set to ignore errors, just
-	# display a warning and continue.
-	if (!defined $ipdown_success) {
-		if ($ignore_from_errors) {
-			print "WARNING: Couldn't bring down $ip IP on $from node.\n";
-		}
-		else {
-			print "ERROR: Couldn't bring down $ip IP on $from node.\n";
-			return;
+	if (defined $rhh_from_ip_info) {
+		# Only attempt to take down the IP on the from host if we were
+		# able to get interface information from that host
+		my $ipdown_success = ipdown({	ip		=> $ip,
+						interface	=> $from_interface,
+						node		=> $from,
+					});
+		# If taking the IP down failed, and we're not set to ignore errors,
+		# report an error and return.  If we are set to ignore errors, just
+		# display a warning and continue.
+		if (!defined $ipdown_success) {
+			if ($ignore_from_errors) {
+				print "WARNING: Couldn't bring down $ip IP on $from node.\n";
+			}
+			else {
+				print "ERROR: Couldn't bring down $ip IP on $from node.\n";
+				return;
+			}
 		}
 	}
 	if ($ip eq 'write') {
