@@ -1,0 +1,78 @@
+@node   Configuration Reference
+@chapter Flipper Configuration Reference
+
+This chapter describes the configuration variables available in Flipper.
+
+For more general information on how the configuration system works, @xref{Configuration}.
+
+Variables are either compulsory or optional.  They are either relevant to nodes or masterpairs only, or specific to the level at which they are defined.
+
+@vindex ip
+@section ip
+
+Applicable to nodes only.  Compulsory - each node must have an @var{ip} variable defined.
+
+@vindex ssh_ip
+@section ssh_ip
+
+Applicable to nodes only.  Optional.
+
+@vindex write_ip
+@section write_ip
+
+Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{write_ip} variable defined.
+
+@vindex read_ip
+@section read_ip
+
+Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{read_ip} variable defined.
+
+@vindex netmask
+@section netmask
+
+Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{netmask} variable defined.
+
+@vindex broadcast
+@section broadcast
+
+Applicable to masterpairs only.  Optional.
+
+@vindex path_to_ifconfig
+@section path_to_ifconfig
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to @code{/sbin}.
+
+@vindex ssh_user
+@section ssh_user
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to @code{root}.
+
+@vindex use_sudo
+@section use_sudo
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to 0, which means "no".
+
+@vindex mysql_user
+@section mysql_user
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to @code{root}.
+
+@vindex mysql_password
+@section mysql_password
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to empty string.
+
+@vindex mysql_port
+@section mysql_port
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to 3306.
+
+@vindex interface
+@section interface
+
+Specific to node or masterpair, whereever defined.  Optional.  No default value.
+
+@vindex send_arp_command
+@section send_arp_command
+
+Specific to node or masterpair, whereever defined.  Optional.  No default value.
