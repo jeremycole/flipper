@@ -1,0 +1,71 @@
+@node   Quick Start
+@chapter Flipper Quick Start
+
+Follow the instructions here to get started with Flipper in just a few minutes.
+
+These instructions relate to the pre-release versions of Flipper.
+
+@section Problems?  Suggestions?  Annoyances?
+
+If you come across any problems, find anything that annoys you, or have any suggestions for how Flipper or this documentation can be improved, please do let us know.
+
+@section Installation
+
+First of all, copy the flipper script from subversion to the node you'll use for managing your masterpairs.
+
+The flipper script assumes perl will be in /usr/bin, if your perl binary is somewhere else, either change the !$ line in the flipper script, or better still put a symlink in place in /usr/bin/perl to your perl binary, as there are plenty of other scripts out there which rely on perl being in /usr/bin.
+
+Copy the lib/Flipper directory from subversion to either the same directory as the flipper script, or some other place in perl's @INC on your system.  If you're on Mac OS X with a case insensitive filesystem, you won't be able to put the Flipper subdirectory and the flipper script in the same directory.
+
+@section Metadata
+
+Flipper uses a database for storing it's configuration information.  This database can be stored in any DBMS supported by Perl's DBI, but currently only MySQL has been tested.
+
+Create the metadata database on a node, then populate it using the schema definition contained in the sql/metadata.sql file in subversion.  The metadata database can reside on one of the masterpairs that you intend to manage using Flipper, or it can live on a separate database server.
+
+Currently, Flipper requires only read access to the metadata database.
+
+@section Pointing Flipper at the Metadata
+
+Flipper uses a DSN-like string to locate it's metadata, along with a username and password for authentication.
+
+These three items of information can be passed to flipper on the command line, using the --metadata or -m switch for the DSN string, and --username or -u and --password or -p switches for the username and password respectively.
+
+You will probably find it more convenient to add a [flipper] section to your my.cnf file (or create a ~/.my.cnf file) containing lines for the metadata DSN, username and password, like this:
+
+[flipper]
+metadata=DBI:mysql:database=flippermetadata;mysql_socket=/tmp/mysql.sock
+username=flippermetadata
+password=letmein
+
+@section Configuration
+
+Configuration has to be done manually at the moment.  Future versions of Flipper will allow you to use the script itself to manage the configuration.
+
+First, decide on a name for your first masterpair, and decide on names for the two nodes.
+
+@subsection IP address information
+
+Insert rows into the masterpair and node tables for the IP addresses of the two nodes and the read and write IP addresses that you will be moving between the nodes.
+
+INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'read_ip', '<read ip address>');
+INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'write_ip', '<write ip address>');
+INSERT INTO node (masterpair, node, name, value) VALUES('<masterpair name>', '<first node name>', 'ip', '<first node ip address>');
+INSERT INTO node (masterpair, node, name, value) VALUES('<masterpair name>', '<second node name>', 'ip', '<second node ip address>');
+
+You'll also need to insert a row into the masterpair table for the netmask of the network containing the nodes.
+
+INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'netmask', '<network netmask>');
+
+@subsection ARP sending command
+
+When an IP address is moved from one host to another, an ARP message needs to be sent out to inform other nodes (servers, routers etc) on the network that the IP address is now available on a different physical (MAC) address.
+
+Most modern UNIX-based operating systems send an ARP message out automatically when an IP address is brought up on an interface, and will handle the ARP messages correctly when they receive them.
+
+Linux does not send ARP messages out automatically, although it does handle receipt of them correctly.   Therefore Flipper needs to be told how to send the ARP message out.
+
+On RedHat Enterprise Linux, CentOS and Fedora, the arping command, supplied with the operating system, can be used to send ARP messages.  In order to use arping, insert a row into the masterpair table.
+
+INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'send_arp_command', 'arping -I $sendarp_interface -c 5 -U -A $sendarp_ip');
+
