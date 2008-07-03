@@ -29,6 +29,9 @@ Copyright @copyright{} 2007-2008 Proven Scaling.
 
 * Known Bugs::
 * Future Enhancements::
+* Platform Nodes::
+
+* Configuration Reference::
 
 * Index::
 @end menu
@@ -39,6 +42,8 @@ Copyright @copyright{} 2007-2008 Proven Scaling.
 @include flipper-usage.texi
 @include flipper-bugs.texi
 @include flipper-future.texi
+@include flipper-platform.texi
+@include flipper-configuration-reference.texi
 
 @node Index
 @unnumbered Index
