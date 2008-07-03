@@ -1,0 +1,58 @@
+@node   Configuration
+@chapter Flipper Configuration
+
+@section Metadata Storage
+
+Flipper has a very flexible and extensible metadata storage system.
+
+In theory it is possible for metadata to be stored anywhere in any arbitary format.
+
+Currently only access to metadata stored in a database using Perl's DBI is implemented, but others can be put in place later, such as XML or YAML.
+
+@subsection DBI metadata storage
+
+Any DBMS that's supported by DBI can be used to store Flipper's metadata.  Currently only MySQL has been tested, but if you have success or failure using another DBMS, please let us know.
+
+There are no restrictions on where the metadata database resides - it can live anywhere, as long as Flipper can get access to read from it.
+
+Currently, Flipper requires only read access to the metadata database.  Future versions of Flipper will require write access to the metadata database.
+
+The metadata database contains two tables - one for information relating to masterpairs, and one for information specific to ndoes.  The schema is available in the sql/metadata.sql file in subversion.
+
+@section Metadata Access
+
+@subsection Data Source Naming Scheme
+
+Flipper uses a naming scheme for it's data source names (DSNs) which is compatible with Perl's DBI.
+
+When storing metadata in a DBMS and accessing it using DBI, the DSN should be the same as would be passed in a @code{DBI->connect} call, for example @code{DBI:mysql:database=flippermetadata;mysql_socket=/tmp/mysql.sock}.
+
+Other metadata storage methods can be chosen by specifying something other than @code{DBI} before the first colon in the DSN - for example, a future YAML storage method might be specified using @code{YAML:file=/etc/flipper.yaml"}.
+
+@subsection Authentication
+
+As well as the DSN, Flipper can use a username and password if the metadata storage method requires authentication to be used.
+
+@subsection Pointing Flipper at Metadata
+
+The three items of information (metadata DSN, username and password) can be passed to flipper on the command line.
+
+Use the @code{--metadata} or @code{-m} switch to tell Flipper where to find the metadata.  The @code{--username} or @code{-u} and @code{--password} or @code{-p} switches specify the username and password respectively.
+
+You will probably find it more convenient to add a @code{[flipper]} section to your @code{my.cnf} file (or create a @code{~/.my.cnf} file) containing lines for the metadata DSN, username and password, like this:
+
+@example
+[flipper]
+metadata=DBI:mysql:database=flippermetadata;mysql_socket=/tmp/mysql.sock
+username=flippermetadata
+password=letmein
+@end example
+
+Any options provided on the command line will override those specified in a @code{my.cnf} file.
+
+@section Configuration
+
+@subsection IP address information
+
+@subsection ARP sending
+
