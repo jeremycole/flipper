@@ -50,7 +50,9 @@ password=letmein
 
 Any options provided on the command line will override those specified in a @code{my.cnf} file.
 
-@section Configuration
+@section MySQL configuration on nodes
+
+@section Configuration Variables
 
 @subsection IP address information
 
