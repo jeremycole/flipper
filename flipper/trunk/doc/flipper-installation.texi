@@ -47,7 +47,8 @@ You will almost definitely need super-user privileges to do this.
 
 The @file{flipper} script can be copied to @file{/usr/bin}, @file{/usr/local/bin} or some other directory in your @env{PATH}.
 
-@subsubheading Installing perl modules into @@INC
+@node Installing perl modules into @@INC
+@subsubsection Installing perl modules into @@INC
 
 Copy the @file{lib/Flipper} directory from subversion to some place in perl's @code{@@INC} on your system.  To list the directories in @code{@@INC} on your system, run @command{perl -e 'print join "\n",@@INC'}.
 
