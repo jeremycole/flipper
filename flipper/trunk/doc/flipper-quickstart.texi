@@ -65,19 +65,21 @@ INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'ne
 
 @subsection ARP sending command
 
-When an IP address is moved from one host to another, an ARP message needs to be sent out to inform other nodes (servers, routers etc) on the network that the IP address is now available on a different physical (MAC) address.
+When an IP address is moved from one node to another, an ARP message needs to be sent out to inform other nodes (servers, routers etc) on the network that the IP address is now available on a different physical (MAC) address.
 
 Most modern UNIX-based operating systems send an ARP message out automatically when an IP address is brought up on an interface, and will handle the ARP messages correctly when they receive them.
 
 Linux does not send ARP messages out automatically, although it does handle receipt of them correctly.   Therefore Flipper needs to be told how to send the ARP message out.
 
-On RedHat Enterprise Linux, CentOS and Fedora, the arping command, supplied with the operating system, can be used to send ARP messages.  In order to use @code{arping}, insert a row into the masterpair table.
+On RedHat Enterprise Linux, CentOS and Fedora, the @code{arping} command, supplied with the operating system, can be used to send ARP messages.  In order to use @code{arping}, insert a row into the masterpair table.
 
 @example
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'send_arp_command', 'arping -I $sendarp_interface -c 5 -U -A $sendarp_ip');
 @end example
 
-@xref{sendarp}.
+You may need to insert a row into the masterpair table for the broadcast address of the network containing the nodes if this is required by the command you're using to send ARP messages.
+
+@ref{sendarp}
 
 @subsection MySQL authentication
 
@@ -87,3 +89,111 @@ Flipper needs to be given authentication information so it can connect to the My
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_user', '<mysql username>');
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_password', '<mysql password>');
 @end example
+
+@subsection Check configuration
+
+Once you've pointed Flipper at the Metadata, and configured Flipper correctly, you should be able to use Flipper's @command{config} command to display the configuration information for a particular masterpair.  For example, to display all the configuration values for a masterpair called @samp{mike}:
+
+@example
+$ flipper mike config
+MASTERPAIR: mike
+        write_ip: 10.6.0.67
+        send_arp_command: arping -I $sendarp_interface -c 5 -U -A $sendarp_ip
+        read_ip: 10.6.0.66
+        netmask: 255.255.255.0
+NODE: first_node
+        ip: 10.6.0.64
+NODE: second_node
+        ip: 10.6.0.65
+$ 
+@end example
+
+If you've not pointed Flipper to the Metadata database correctly, you'll be presented with an error which should give useful information as to what the problem was:
+
+@example
+$ flipper mike config
+Couldn't connect using username 'root' to DSN:
+DBI:mysql:database=wrongdb
+
+The error from DBI was:
+Unknown database 'wrongdb'
+
+Check that the DSN, username and password specified in my.cnf or as options
+to this script are all correct.
+$ 
+@endexample
+
+To display a list of the masterpairs, just run @command{flipper} with no command:
+
+@example
+$ flipper
+The following masterpairs exist:
+        mike
+$
+@end example
+
+@section Set up IP addresses
+
+Once Flipper's configured, it's ready to use.  The @command{status} command gives an at-a-glance report on the status of a particular masterpair.  The first time you run Flipper, the read and write IPs won't be up, and the @command{status} command will give output similar to this:
+
+@example
+$ ./flipper mike status
+MASTERPAIR: mike
+NODE: first_node is writable, replication running, 0s delay
+NODE: second_node is writable, replication running, 0s delay
+WARNING: No node has the read IP
+WARNING: No node has the write IP
+$
+@end example
+
+This tells us that both nodes in the masterpair @samp{mike} are up, MySQL is writable on both nodes, replication is running on both nodes with no delay, but the read and write IPs are not up on either node.  We use Flipper's @command{set} command to bring the IP up on the appropriate node.  In this case, we bring the read IP up on the @samp{first_node} node, and the write IP up on the @samp{second_node} node.  The warnings are self-explanatory.
+
+@example
+$ flipper mike set read first_node
+WARNING: read IP is not up on second_node node.
+WARNING: Won't attempt to take down read IP on second_node node.
+$ flipper mike set write second_node
+WARNING: write IP is not up on first_node node.
+WARNING: Won't attempt to take down write IP on first_node node.
+$ flipper mike status
+MASTERPAIR: mike
+NODE: first_node has read IP, is read-only, replication running, 0s delay
+NODE: second_node has write IP, is writable, replication running, 0s delay
+$
+@end example
+
+@section Using Flipper
+
+This is just a quick overview of what Flipper can do.  More detail can be found elsewhere in this documentation.  Help is available on the command line by running @command{flipper --help} for usage information and @command{perldoc flipper} for a brief overview.
+
+Flipper's @command{set} command ensures an IP is running on a particular node.  If it's already running on the node you specify, it won't be moved.  If it's running on the other node, it will be moved.
+
+The @command{swap} command moves IPs from one node to another.  If you specify an IP, it will move only the IP you specify, otherwise all IPs will be moved to the other node.
+
+The @command{disable} command moves any IPs that are up on a particular node to the other node.  This is useful for taking a machine out of use for maintenance.  The @command{fail} command is similar to the @command{disable} command, but is used for handling nodes which have suffered an external permanent or semi-permanent failure.
+
+The following example demonstrates the use of the commands.  We use the @command{status} command to display the current status:
+
+@example
+$ flipper mike status
+MASTERPAIR: mike
+NODE: first_node has read IP, is read-only, replication running, 0s delay
+NODE: second_node has write IP, is writable, replication running, 0s delay
+$ flipper mike swap
+$ flipper mike status
+MASTERPAIR: mike
+NODE: first_node has write IP, is writable, replication running, 0s delay
+NODE: second_node has read IP, is read-only, replication running, 0s delay
+$ flipper mike set read first_node
+$ flipper mike status
+MASTERPAIR: mike
+NODE: first_node has read IP, has write IP, is writable, replication running, 0s delay
+NODE: second_node is read-only, replication running, 0s delay
+$ flipper mike disable first_node
+$ flipper mike status
+MASTERPAIR: mike
+NODE: first_node is read-only, replication running, 0s delay
+NODE: second_node has read IP, has write IP, is writable, replication running, 0s delay
+$
+@end example
+
