@@ -395,8 +395,19 @@ sub ipmove {
 	print "About to get IP info from $from\n" if $rh_options->{debug};
 	my $rhh_from_ip_info = get_node_ip_info($from);
 	if (defined $rhh_from_ip_info) {
-		$from_interface = $rhh_from_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}->{interface};
-	} else {
+		if (defined $rhh_from_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}) {
+			$from_interface = $rhh_from_ip_info->{addresses}->{$rh_masterpair_info->{$ip.'_ip'}}->{interface};
+		}
+		else {
+			# We have been able to determine that the IP is not
+			# running on the from node, so consider this to not be
+			# an error, but don't bother attempting to bring down
+			# the IP on the from node
+			print "WARNING: $ip IP is not up on $from node.\n";
+			print "WARNING: Won't attempt to take down $ip IP on $from node.\n";
+		}
+	}
+	else {
 		# We couldn't determine the interface that the IP is running
 		# on, so unless we're set to ignore_from_errors, we should give
 		# up at this point, as we might not be able to bring the IP
@@ -404,7 +415,8 @@ sub ipmove {
 		if (!$ignore_from_errors) {
 			print "ERROR: Couldn't determine interface on $from node to bring down IP.  $ip IP won't be moved.\n";
 			return;
-		} else {
+		}
+		else {
 			print "WARNING: Couldn't determine interface on $from node to bring down IP.\n";
 			print "WARNING: Won't attempt to take down $ip IP on $from node.\n";
 		}
@@ -452,9 +464,10 @@ sub ipmove {
 		}
 
 	}
-	if (defined $rhh_from_ip_info) {
+	if (defined $rhh_from_ip_info && defined $from_interface) {
 		# Only attempt to take down the IP on the from host if we were
-		# able to get interface information from that host
+		# able to get interface information from that host for the IP
+		# that we're taking down.
 		my $ipdown_success = ipdown({	ip		=> $ip,
 						interface	=> $from_interface,
 						node		=> $from,
