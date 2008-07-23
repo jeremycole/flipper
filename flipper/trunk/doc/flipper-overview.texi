@@ -5,6 +5,10 @@ Flipper is a tool for managing pairs of MySQL nodes (servers) arranged in a mast
 
 A pair of nodes arranged like this is known as a masterpair.  
 
+Flipper is written in perl, and has been written to be as portable as possible.
+
+If you come across any problems, find anything that annoys you, or have any suggestions for how Flipper or this documentation can be improved, please do let us know.
+
 @section IP addresses
 @cindex ip addresses
 

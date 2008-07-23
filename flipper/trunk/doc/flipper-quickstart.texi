@@ -5,10 +5,6 @@ Follow the instructions here to get started with Flipper in just a few minutes.
 
 These instructions relate to the pre-release versions of Flipper.
 
-@section Problems?  Suggestions?  Annoyances?
-
-If you come across any problems, find anything that annoys you, or have any suggestions for how Flipper or this documentation can be improved, please do let us know.
-
 @section Installation
 
 First of all, copy the @file{flipper} script from subversion to the node you'll use for managing your masterpairs.
@@ -95,7 +91,7 @@ INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'my
 Once you've pointed Flipper at the Metadata, and configured Flipper correctly, you should be able to use Flipper's @command{config} command to display the configuration information for a particular masterpair.  For example, to display all the configuration values for a masterpair called @samp{mike}:
 
 @example
-$ flipper mike config
+$ @b{flipper mike config}
 MASTERPAIR: mike
         write_ip: 10.6.0.67
         send_arp_command: arping -I $sendarp_interface -c 5 -U -A $sendarp_ip
@@ -111,7 +107,7 @@ $
 If you've not pointed Flipper to the Metadata database correctly, you'll be presented with an error which should give useful information as to what the problem was:
 
 @example
-$ flipper mike config
+$ @b{flipper mike config}
 Couldn't connect using username 'root' to DSN:
 DBI:mysql:database=wrongdb
 
@@ -121,12 +117,12 @@ Unknown database 'wrongdb'
 Check that the DSN, username and password specified in my.cnf or as options
 to this script are all correct.
 $ 
-@endexample
+@end example
 
 To display a list of the masterpairs, just run @command{flipper} with no command:
 
 @example
-$ flipper
+$ @b{flipper}
 The following masterpairs exist:
         mike
 $
@@ -137,7 +133,7 @@ $
 Once Flipper's configured, it's ready to use.  The @command{status} command gives an at-a-glance report on the status of a particular masterpair.  The first time you run Flipper, the read and write IPs won't be up, and the @command{status} command will give output similar to this:
 
 @example
-$ ./flipper mike status
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node is writable, replication running, 0s delay
 NODE: second_node is writable, replication running, 0s delay
@@ -149,13 +145,13 @@ $
 This tells us that both nodes in the masterpair @samp{mike} are up, MySQL is writable on both nodes, replication is running on both nodes with no delay, but the read and write IPs are not up on either node.  We use Flipper's @command{set} command to bring the IP up on the appropriate node.  In this case, we bring the read IP up on the @samp{first_node} node, and the write IP up on the @samp{second_node} node.  The warnings are self-explanatory.
 
 @example
-$ flipper mike set read first_node
+$ @b{flipper mike set read first_node}
 WARNING: read IP is not up on second_node node.
 WARNING: Won't attempt to take down read IP on second_node node.
-$ flipper mike set write second_node
+$ @b{flipper mike set write second_node}
 WARNING: write IP is not up on first_node node.
 WARNING: Won't attempt to take down write IP on first_node node.
-$ flipper mike status
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node has read IP, is read-only, replication running, 0s delay
 NODE: second_node has write IP, is writable, replication running, 0s delay
@@ -175,22 +171,22 @@ The @command{disable} command moves any IPs that are up on a particular node to 
 The following example demonstrates the use of the commands.  We use the @command{status} command to display the current status:
 
 @example
-$ flipper mike status
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node has read IP, is read-only, replication running, 0s delay
 NODE: second_node has write IP, is writable, replication running, 0s delay
-$ flipper mike swap
-$ flipper mike status
+$ @b{flipper mike swap}
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node has write IP, is writable, replication running, 0s delay
 NODE: second_node has read IP, is read-only, replication running, 0s delay
-$ flipper mike set read first_node
-$ flipper mike status
+$ @b{flipper mike set read first_node}
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node has read IP, has write IP, is writable, replication running, 0s delay
 NODE: second_node is read-only, replication running, 0s delay
-$ flipper mike disable first_node
-$ flipper mike status
+$ @b{flipper mike disable first_node}
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node is read-only, replication running, 0s delay
 NODE: second_node has read IP, has write IP, is writable, replication running, 0s delay
