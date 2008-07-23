@@ -1,3 +1,64 @@
 @node   Installation
 @chapter Installation
 
+Currently, Flipper can only be obtained directly from Proven Scaling's public Subversion repository.  Pre-built packages will be available at some point in the future.  Don't be put off by this, though - obtaining and installing Flipper is very simple.
+
+@section Obtaining Flipper
+
+To fetch the most recent stable version of Flipper from Subversion, simply run the following command in a shell:
+
+@example
+$ @b{svn checkout svn://svn.provenscaling.com/public/flipper/trunk/ flipper}
+A    flipper/sql
+A    flipper/sql/metadata.sql
+A    flipper/flipper
+A    flipper/doc
+A    flipper/doc/flipper-future.texi
+A    flipper/doc/flipper-quickstart.texi
+A    flipper/doc/flipper-bugs.texi
+A    flipper/doc/flipper-installation.texi
+A    flipper/doc/flipper.texi
+A    flipper/doc/flipper-configuration-reference.texi
+A    flipper/doc/flipper-platform.texi
+A    flipper/doc/flipper-usage.texi
+A    flipper/doc/flipper-overview.texi
+A    flipper/doc/flipper-configuration.texi
+A    flipper/lib
+A    flipper/lib/Flipper
+A    flipper/lib/Flipper/Metadata
+A    flipper/lib/Flipper/Metadata/Dummy.pm
+A    flipper/lib/Flipper/Metadata/DBI.pm
+A    flipper/lib/Flipper/Metadata.pm
+Checked out revision 94.
+$
+@end example
+
+If you want to check Flipper out to a different directory, specify something other than @samp{flipper} as the second parameter to @command{svn checkout}.
+
+@section Installing Flipper
+
+@subsection Where's perl?
+
+The flipper script assumes @file{perl} will be in @file{/usr/bin}.  If your Perl executable is located somewhere else, either change the @code{#!} line in the @file{flipper} script, or better still put a symlink in place in @file{/usr/bin/perl} to your perl binary, as there are plenty of other scripts out there which rely on perl being in @file{/usr/bin}.
+
+@subsection Installing into your path
+
+You will almost definitely need super-user privileges to do this.
+
+The @file{flipper} script can be copied to @file{/usr/bin}, @file{/usr/local/bin} or some other directory in your @env{PATH}.
+
+@subsubheading Installing perl modules into @@INC
+
+Copy the @file{lib/Flipper} directory from subversion to some place in perl's @code{@@INC} on your system.  To list the directories in @code{@@INC} on your system, run @command{perl -e 'print join "\n",@@INC'}.
+
+@file{/usr/lib/perl5/site_perl}, @file{/usr/local/lib/perl5/site_perl} on Linux/Solaris/BSD and @file{/Library/Perl} on Mac OS X are good places to put the @file{Flipper} directory.
+
+@subsection Installing into your home directory or other arbitary location
+
+The @file{flipper} script can run anywhere, so you can copy it to your home directory or other arbitary location.  This can be useful if you want to install Flipper on a node on which you don't have super-user privileges.
+
+If you do this, and you're only going to ever invoke Flipper as @command{./flipper}, you can copy the @file{lib/Flipper} directory from subversion to the same directory as the @file{flipper} script.
+
+Otherwise, you'll need to copy the @file{lib/Flipper} directory to some place in perl's @code{@@INC} on your system.  @xref{Installing perl modules into @@INC}
+
+If you're on Mac OS X with a case insensitive filesystem, you won't be able to put the @file{Flipper} subdirectory and the @file{flipper} script in the same directory.

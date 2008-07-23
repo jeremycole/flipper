@@ -7,11 +7,17 @@ These instructions relate to the pre-release versions of Flipper.
 
 @section Installation
 
-First of all, copy the @file{flipper} script from subversion to the node you'll use for managing your masterpairs.
+First of all, checked out Flipper from the Proven Scaling Subversion repository to the node you'll use for managing your masterpairs.
 
-The flipper script assumes @file{perl} will be in @file{/usr/bin}, if your Perl executable is located somewhere else, either change the @code{!$} line in the @code{flipper} script, or better still put a symlink in place in @file{/usr/bin/perl} to your perl binary, as there are plenty of other scripts out there which rely on perl being in @file{/usr/bin}.
+The flipper script assumes @file{perl} will be in @file{/usr/bin}.  If your Perl executable is located somewhere else, either change the @code{#!} line in the @file{flipper} script (the first line), or better still put a symlink in place in @file{/usr/bin/perl} to your perl binary, as there are plenty of other scripts out there which rely on perl being in @file{/usr/bin}.
 
-Copy the @file{lib/Flipper} directory from subversion to either the same directory as the flipper script, or some other place in perl's @code{@@INC} on your system.  If you're on Mac OS X with a case insensitive filesystem, you won't be able to put the Flipper subdirectory and the flipper script in the same directory.
+Copy the @file{flipper} script to @file{/usr/bin}.
+
+Copy the @file{lib/Flipper} directory to some place in perl's @code{@@INC} on your system.  To list the directories in @code{@@INC} on your system, run @command{perl -e 'print join "\n",@@INC'}.
+
+@file{/usr/lib/perl5/site_perl}, @file{/usr/local/lib/perl5/site_perl} on Linux/Solaris/BSD and @file{/Library/Perl} on Mac OS X are good places to put the @file{Flipper} directory.
+
+For more information on Installing Flipper, @xref{Installation}.
 
 @section Metadata
 
