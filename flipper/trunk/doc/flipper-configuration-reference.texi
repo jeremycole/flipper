@@ -7,6 +7,7 @@ For more general information on how the configuration system works, @xref{Config
 
 Variables are either compulsory or optional.  They are either relevant to nodes or masterpairs only, or specific to the level at which they are defined.
 
+@node ip configuration variable
 @vindex ip
 @section ip
 
@@ -14,6 +15,7 @@ Applicable to nodes only.  Compulsory - each node must have an @var{ip} variable
 
 Specifies the IP address of each node.  Flipper will use this IP address to connect to MySQL on the node.
 
+@node ssh_ip configuration variable
 @vindex ssh_ip
 @section ssh_ip
 
@@ -21,6 +23,7 @@ Applicable to nodes only.  Optional.
 
 If ssh is bound to a different IP address than MySQL on a node, define a @var{ssh_ip} variable for that node, and Flipper will use that IP address for ssh rather than the one specified by the @var{ip} variable.
 
+@node write_ip configuration variable
 @vindex write_ip
 @section write_ip
 
@@ -28,6 +31,7 @@ Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{w
 
 This is the IP address which will be used for write access to MySQL.
 
+@node read_ip configuration variable
 @vindex read_ip
 @section read_ip
 
@@ -35,6 +39,7 @@ Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{r
 
 This is the IP address which will be used for read access to MySQL.
 
+@node netmask configuration variable
 @vindex netmask
 @section netmask
 
@@ -42,6 +47,7 @@ Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{n
 
 This is the netmask for the read_ip and write_ip.  It's normally the same as the netmask for the nodes' main IPs, but doesn't necessarily have to be the same.
 
+@node broadcast configuration variable
 @vindex broadcast
 @section broadcast
 
@@ -49,6 +55,7 @@ Applicable to masterpairs only.  Optional.
 
 This is the broadcast address for the network for the read_ip and write_ip.  Not needed for normal use but may be required for sending ARP messages.
 
+@node path_to_ifconfig configuration variable
 @vindex path_to_ifconfig
 @section path_to_ifconfig
 

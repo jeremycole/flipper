@@ -17,7 +17,7 @@ There are no restrictions on where the metadata database resides - it can live a
 
 Currently, Flipper requires only read access to the metadata database.  Future versions of Flipper will require write access to the metadata database.
 
-The metadata database contains two tables - one for information relating to masterpairs, and one for information specific to ndoes.  The schema is available in the sql/metadata.sql file in subversion.
+The metadata database contains two tables - one for information relating to masterpairs, and one for information specific to nodes.  The schema is available in the sql/metadata.sql file in subversion.
 
 @section Metadata Access
 
@@ -50,11 +50,59 @@ password=letmein
 
 Any options provided on the command line will override those specified in a @code{my.cnf} file.
 
-@section MySQL configuration on nodes
-
 @section Configuration Variables
 
-@subsection IP address information
+There are three types of configuration variable in Flipper:
 
-@subsection ARP sending
+@itemize @bullet
+@item
+Masterpair configuration variables
+@item
+Node configuration variables
+@item
+Cascading variables
+@end itemize
+
+Configuration variables have a @dfn{name} and a @dfn{value}.  Some configuration variables are compulsory, some are optional.  Some optional configuration variables have a @dfn{default value} which is used if the variable is not specified.
+
+Masterpair configuration variables and node configuration variables are specific to masterpairs and nodes respectively.
+
+Cascading variables can be specified at masterpair or node level.  If a cascading variable is specified at node level, then it will be used for that node.  If a cascading variable is specified at masterpair level, then it will be used for both nodes in the masterpairs - unless it's also specified at node level, in which case the node level value will override the masterpair level value.
+
+@section Masterpair and Node names
+
+Masterpair and node names can be up to 20 characters long, and must not contain spaces.  The use of other characters which might confuse the shell isn't recommended - stick to alphanumerics, underscore, hyphen and dot to be safe.
+
+Node names are used internally by Flipper only.  They need not bear any resemblance to actual hostnames.  You could use @samp{first_node} and @samp{second_node} for the two nodes in all your masterpairs, or you may feel more comfortable using node names which resemble the hostnames.
+
+@section Network configuration
+
+@subsection IP address configuration
+
+@subsection Node IP addresses
+
+Each node has a base IP address.  This is stored as the @ref{ip configuration variable} at node level.
+
+Flipper will use this base IP address to connect to the node's ssh daemon and MySQL server.  If the ssh daemon is bound to a different IP address to the base address on the node, then you can store the IP address for ssh connections as the @ref{ssh_ip configuration variable} at node level.
+
+The MySQL server must be listening on the base IP address of the node.
+
+@subsubsection Read and Write IP addresses
+
+The read and write IP addresses are used by external clients to query the data stored on the masterpair.  Clients performing read operations only should connect to the read IP address.  Clients performing read/write operations should connect to the write IP address.  These are stored as @ref{read_ip configuration variable}} and @ref{write_ip configuration variable} at masterpair level.
+
+The read and write IP addresses need not be on the same network (either in a physical or logical sense) as the base address of the nodes.  They do however need to be on the same network as each other.
+
+@subsubsection Netmask and Broadcast addresses
+
+Flipper also needs to know the netmask, and in some cases the broadcast address, for the network on which the read and write IP addresses reside.  Although the broadcast address is not always required, it's advisable to always configure it.
+
+These are stored as @ref{netmask configuration variable} and @ref{broadcast configuration variable} at masterpair level.
+
+@subsection Interface configuration
+
+@section SSH configuration
+
+@section MySQL configuration
+
 

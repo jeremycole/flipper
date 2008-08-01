@@ -7,7 +7,7 @@ These instructions relate to the pre-release versions of Flipper.
 
 @section Installation
 
-First of all, checked out Flipper from the Proven Scaling Subversion repository to the node you'll use for managing your masterpairs.
+First of all, check out Flipper from the Proven Scaling Subversion repository to the node you'll use for managing your masterpairs.
 
 The flipper script assumes @file{perl} will be in @file{/usr/bin}.  If your Perl executable is located somewhere else, either change the @code{#!} line in the @file{flipper} script (the first line), or better still put a symlink in place in @file{/usr/bin/perl} to your perl binary, as there are plenty of other scripts out there which rely on perl being in @file{/usr/bin}.
 
@@ -17,7 +17,7 @@ Copy the @file{lib/Flipper} directory to some place in perl's @code{@@INC} on yo
 
 @file{/usr/lib/perl5/site_perl}, @file{/usr/local/lib/perl5/site_perl} on Linux/Solaris/BSD and @file{/Library/Perl} on Mac OS X are good places to put the @file{Flipper} directory.
 
-For more information on Installing Flipper, @xref{Installation}.
+For more information on installing Flipper, @xref{Installation}.
 
 @section Metadata
 
@@ -50,7 +50,7 @@ First, decide on a name for your first masterpair, and decide on names for the t
 
 @subsection IP address information
 
-Insert rows into the masterpair and node tables for the IP addresses of the two nodes and the read and write IP addresses that you will be moving between the nodes.  See @ref{ip}, @ref{read_ip}, @ref{write_ip}.
+Insert rows into the masterpair and node tables for the IP addresses of the two nodes and the read and write IP addresses that you will be moving between the nodes.  See @ref{ip configuration variable}, @ref{read_ip configuration variable}, @ref{write_ip configuration variable}.
 
 @example
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'read_ip', '<read ip address>');
