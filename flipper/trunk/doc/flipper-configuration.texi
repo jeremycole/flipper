@@ -101,6 +101,10 @@ These are stored as @ref{netmask configuration variable} and @ref{broadcast conf
 
 @subsection Interface configuration
 
+Flipper needs to know which physical network interface it should use for the read and write IP addresses on each node.  If there is only one physical interface configured, then Flipper will use that.  If there are multiple physical interfaces on the machine, then Flipper will need to be told which one to use.
+
+The interface is stored as @ref{interface configuration variable}.  This can be stored at either masterpair level, or node level.  If both nodes are to use the same interface for the read and write IPs, then store it at masterpair level, and it will be applied to both nodes.
+
 @section SSH configuration
 
 @section MySQL configuration

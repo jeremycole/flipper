@@ -1,0 +1,6 @@
+@node   Contacting Proven Scaling
+@chapter Contacting Proven Scaling
+
+If you have any questions, comments, problems, suggestions, you've found a bug or you simply want to let us know that you're using Flipper, we'd be delighted to hear from you.  Please drop us an email at @email{software@provenscalling.com}.
+
+Proven Scaling's home on the web is at @uref{http://www.provenscaling.com/}.
