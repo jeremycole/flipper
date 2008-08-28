@@ -1,5 +1,5 @@
 @node   Quick Start
-@chapter Flipper Quick Start
+@chapter Quick Start
 
 Follow the instructions here to get started with Flipper in just a few minutes.
 
@@ -59,7 +59,7 @@ INSERT INTO node (masterpair, node, name, value) VALUES('<masterpair name>', '<f
 INSERT INTO node (masterpair, node, name, value) VALUES('<masterpair name>', '<second node name>', 'ip', '<second node ip address>');
 @end example
 
-You'll also need to insert a row into the masterpair table for the netmask of the network containing the nodes.  See @ref{netmask}.
+You'll also need to insert a row into the masterpair table for the netmask of the network containing the nodes.  See @ref{netmask configuration variable}.
 
 @example
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'netmask', '<network netmask>');
@@ -81,11 +81,11 @@ INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'se
 
 You may need to insert a row into the masterpair table for the broadcast address of the network containing the nodes if this is required by the command you're using to send ARP messages.
 
-@ref{sendarp}
+For more information, see @ref{send_arp_command configuration variable}.
 
 @subsection MySQL authentication
 
-Flipper needs to be given authentication information so it can connect to the MySQL servers running on the nodes.  By default, it will attempt to connect as @code{root} with no password, on port 3306.  If these defaults are not suitable, insert rows into the masterpair table to tell Flipper how to log into MySQL.  This assumes the same authentication credentials are to be used on each node.  See @ref{mysql_user}, @ref{mysql_password}, @ref{mysql_port}.
+Flipper needs to be given authentication information so it can connect to the MySQL servers running on the nodes.  By default, it will attempt to connect as @code{root} with no password, on port 3306.  If these defaults are not suitable, insert rows into the masterpair table to tell Flipper how to log into MySQL.  This assumes the same authentication credentials are to be used on each node.  See @ref{mysql_user configuration variable}, @ref{mysql_password configuration variable}, @ref{mysql_port configuration variable}.
 
 @example
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_user', '<mysql username>');

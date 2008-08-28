@@ -1,5 +1,5 @@
 @node   Configuration Reference
-@chapter Flipper Configuration Reference
+@chapter Configuration Reference
 
 This chapter describes the configuration variables available in Flipper.
 
@@ -63,6 +63,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to @file
 
 If the ifconfig command doesn't exist in @file{/sbin}, for example on FreeBSD where it is in @file{/usr/sbin}, specify this variable to point Flipper to the correct location.
 
+@node ssh_user configuration variable
 @vindex ssh_user
 @section ssh_user
 
@@ -70,6 +71,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to @code
 
 This specifies the user which will Flipper will use to ssh to the nodes.  If you don't want it to use the @code{root} user, then specify this variable.
 
+@node use_sudo configuration variable
 @vindex use_sudo
 @section use_sudo
 
@@ -77,6 +79,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to 0, wh
 
 If set to 1, Flipper will use sudo for privilege escalation when carrying out operations on nodes (such as bringing up and taking down IP aliases) which require superuser privileges.
 
+@node mysql_user configuration variable
 @vindex mysql_user
 @section mysql_user
 
@@ -84,6 +87,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to @code
 
 This is the user which Flipper will use to connect to MySQL on the nodes.  This is not the user which is used to connect to the metadata database - that is specified using the @code{--username} command line switch or in @file{my.cnf}.
 
+@node mysql_password configuration variable
 @vindex mysql_password
 @section mysql_password
 
@@ -91,6 +95,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to empty
 
 This is the password which Flipper will use to connect to MySQL on the nodes.  This is not the user which is used to connect to the metadata database - that is specified using the @code{--password} command line switch or in @file{my.cnf}.
 
+@node mysql_port configuration variable
 @vindex mysql_port
 @section mysql_port
 
@@ -98,6 +103,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to 3306.
 
 If MySQL on the nodes runs on a non-standard port, use this variable to specify the port number.
 
+@node interface configuration variable
 @vindex interface
 @section interface
 
@@ -109,6 +115,7 @@ If no value is configured and there's only a single interface on a node, that si
 
 If no value is configured and multiple interfaces exist on a node, the interface must be specified.
 
+@node send_arp_command configuration variable
 @vindex send_arp_command
 @section send_arp_command
 
@@ -118,7 +125,13 @@ Specifies the command which will be used to send ARP messages when an IP address
 
 The following variables will be interpolated into the command:
 
+@itemize @bullet
+@item
 @var{$sendarp_ip} - the IP address which is being brought up
+@item
 @var{$sendarp_netmask} - the netmask
-@var{$sendarp_broadcast} - the broadcast address of the network (only available if the @var{broadcast} variable has been specified)
+@item
+@var{$sendarp_broadcast} - the broadcast address of the network (only available if the @ref{broadcast configuration variable} variable has been specified)
+@item
 @var{$sendarp_interface} - the physical interface on which the IP address has been brought up
+@end itemize

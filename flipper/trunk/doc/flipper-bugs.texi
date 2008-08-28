@@ -1,3 +1,4 @@
 @node   Known Bugs
 @chapter Known Bugs
 
+No known bugs, but there are almost definitely plenty of unknown ones.  We would be delighted to hear from you if you find a bug - see @xref{Contacting Proven Scaling}.

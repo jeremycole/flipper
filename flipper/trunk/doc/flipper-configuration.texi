@@ -1,5 +1,5 @@
 @node   Configuration
-@chapter Flipper Configuration
+@chapter Configuration
 
 @section Metadata Storage
 
@@ -79,11 +79,11 @@ Node names are used internally by Flipper only.  They need not bear any resembla
 
 @subsection IP address configuration
 
-@subsection Node IP addresses
+@subsubsection Node IP addresses
 
 Each node has a base IP address.  This is stored as the @ref{ip configuration variable} at node level.
 
-Flipper will use this base IP address to connect to the node's ssh daemon and MySQL server.  If the ssh daemon is bound to a different IP address to the base address on the node, then you can store the IP address for ssh connections as the @ref{ssh_ip configuration variable} at node level.
+Flipper will use this base IP address to connect to the node's ssh daemon and MySQL server.  If the ssh daemon is bound to a different IP address to the base address on the node, then you can store the IP address for ssh connections as @ref{ssh_ip configuration variable} at node level.
 
 The MySQL server must be listening on the base IP address of the node.
 
@@ -107,6 +107,37 @@ The interface is stored as @ref{interface configuration variable}.  This can be 
 
 @section SSH configuration
 
+In order to execute commands on the nodes, Flipper needs to be able to connect to the nodes using ssh.  The following configuration variables are used to control how Flipper connects using ssh to the nodes:
+
+@itemize @bullet
+@item
+@ref{ssh_ip configuration variable}
+@item
+@ref{ssh_user configuration variable}
+@item
+@ref{use_sudo configuration variable}
+@end itemize
+
+The default configuration is that @ref{ssh_ip configuration variable} is unset, @ref{ssh_user configuration variable} is @code{root} and @ref{use_sudo configuration variable} is set to 0, representing "off".
+
+As described above, if the ssh daemon is bound to a different IP address to the base address on any node, then you can store the IP address for ssh connections as @ref{ssh_ip configuration variable} at node level.  If Flipper is to use the base IP address of a node for ssh connections, @ref{ssh_ip configuration variable} should not be defined for that node.
+
+@ref{ssh_user configuration variable} is the user which Flipper will connect as via ssh.  If this is changed to be a non-@code{root} user, then you should set @ref{use_sudo configuration variable} to 1.  This will enable Flipper to use sudo to execute commands which require superuser access - typically the commands used to bring up and take down IP aliases on the nodes.
+
+You should ensure that you are fully aware of the security implications of how you configure Flipper to work with ssh.  The default settings of @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} may not be appropriate for the security environment in your organisation.
+
+We would recommend that Flipper be configured to connect to nodes as a user with a restricted shell, allowing connections only from the appropriate IP address(es), and privilege escalation for that user via sudo should be restricted to the required commands only.
+
+Although @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} can both be specified at node level, we recommend that they are only specified at masterpair level and nodes within a masterpair are identically configured.
+
 @section MySQL configuration
 
+Flipper needs to connect to MySQL on the nodes.
 
+In order to do this, the @ref{mysql_user configuration variable}, @ref{mysql_password configuration variable} and @ref{mysql_port configuration variable} configuration variables are used to specify the username and password that should be used to connect to MySQL, and the port on the node which should be connected to.
+
+MySQL should be bound to the base IP address of each node.
+
+The user that Flipper connects to on the nodes requires the @code{SUPER} privilege.
+
+We recommend that you create a user exclusively for the use of Flipper with just the @code{SUPER} privilege.  We recommend not using the MySQL @code{root} user for use with Flipper.
