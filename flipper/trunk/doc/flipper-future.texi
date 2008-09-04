@@ -43,4 +43,25 @@ Although we ruled out implementing automatic failover of read and write IP addre
 @b{HP-UX support}
 
 The network interface and IP alias routines in Flipper don't work on HP-UX, but it would be possible to fix this if required.
+
+@item
+@b{Refactor code to OO style}
+
+Flipper's code would be a lot more elegant if it were refactored in an object oriented style.
+
+@item
+@b{Sanity checking of configuration}
+
+Flipper doesn't currently carry out much sanity checking of it's configuration - it should!
+
+@item
+@b{Consistency of output}
+
+The consistency of the output that Flipper produces when the @option{--verbose} and/or @option{--debug} options are used could be much improved.
+
+@item
+@b{Documentation Improvements}
+
+The documentation could be improved by adding notes on how to set up master-master replication, and a 'cookbook' with common use scenarios.
+
 @end itemize

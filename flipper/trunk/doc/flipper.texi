@@ -28,7 +28,7 @@ Copyright @copyright{} 2007-2008 Proven Scaling.
 * Configuration::
 * Usage::
 
-* Known Bugs::
+* Bugs::
 * Future Developments::
 * Platform Notes::
 
