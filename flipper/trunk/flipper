@@ -355,7 +355,7 @@ sub ipup {
 	my $ip_addr = $rh_masterpair_info->{$rh_params->{ip}.'_ip'};
 	my $path_to_ifconfig = config('path_to_ifconfig', $node);
 	# determine interface to use
-	my ($interface) = interface_for_node($node, $rh_params->{interface});
+	my ($interface) = interface_for_node($node, $rh_params->{interface}, $rh_params->{ip});
 	print "Using interface $interface on $node to bring up $ip IP.\n" if $rh_options->{verbose};
 	my $netmask = $rh_masterpair_info->{netmask};
 	if ($rhh_node_ip_info->{os}=~/(Linux|SunOS)/) {
@@ -559,7 +559,7 @@ sub sendarp {
 	else {
 		# prepare the following variables for double-quoting into sendarp_command
 		# interface, ip, broadcast addr, netmask
-		my ($dummy, $sendarp_interface) = interface_for_node($node, $rh_params->{interface});
+		my ($dummy, $sendarp_interface) = interface_for_node($node, $rh_params->{interface}, $rh_params->{ip});
 		my $sendarp_ip = $rh_masterpair_info->{$rh_params->{ip}.'_ip'};
 		my $sendarp_broadcast = $rh_masterpair_info->{'broadcast'} || '';
 		my $sendarp_netmask = $rh_masterpair_info->{'netmask'} || '';
@@ -585,6 +585,8 @@ sub interface_for_node {
 	# (first can be used for bringing up/down aliases, second can be used for sending arps)
 	my $node = shift || die "INTERNAL ERROR:  No node specified to sub interface_for_node ";
 	my $interface = shift;
+	my $ip = shift;
+
 	my $rhh_node_ip_info = get_node_ip_info($node,1) || die "INTERNAL ERROR:  Couldn't get IP information from node $node ";
 	if (!defined $interface) {
 		# we've not been given an interface in the parameters to this subroutine.  is it in the metadata?
@@ -609,7 +611,18 @@ sub interface_for_node {
 		}
 	}
 	my $interface_with_logic = $interface;
-	if ($rhh_node_ip_info->{os}=~/(Linux|SunOS)/) {
+	
+  if (defined $ip)
+  {
+    my $log = config($ip . "_interface", $node);
+    if (defined $log)
+    {
+      $interface_with_logic = $log;
+    }
+  }
+	
+	elsif ($rhh_node_ip_info->{os} =~ /(Linux|SunOS)/)
+	{
 		# SVR4-based operating system on the node
 		# need to work out first available logical interface number
 		my %taken_logical_interfaces;
@@ -647,14 +660,18 @@ sub get_node_ip_info {
 			($rhh_ip_info->{os}) = ($uname_and_ifconfig_output=~/^([^\n]+)\n/ms);
 			# split the output of ifconfig into one element per interface
 			my $interface;
-			foreach my $line (split(/\n/, $uname_and_ifconfig_output)) {
-				if ( my ($match_if) = ($line =~/(^\w+(?:\d)?(?:\:\d)?)/) ) {
+			foreach my $line (split(/\n/, $uname_and_ifconfig_output))
+			{
+				if ( my ($match_if) = ($line =~ /(^\w+(?:\d+)?(?:\:\d+)?)/) )
+				{
 					# line not starting with whitespace contains an interface definition at the start
 					# remove the interface definition from the line, and set the current interface
-					$line =~s/\w+\d(\:)?\s+//;
+					$line =~ s/\w+\d(\:)?\s+//;
 					$interface=$match_if;
 				}
-				if (my ($ip) = ($line=~/inet (?:addr\:)?(\d+(?:\.\d+){3})/)) {
+
+				if (my ($ip) = ($line=~/inet (?:addr\:)?(\d+(?:\.\d+){3})/))
+				{
 					# this line has an IP address definition.
 					next if ($ip eq '127.0.0.1');
 					my ($netmask) = ($line=~/mask[\s\:]([\w\.]+)/ig);
@@ -670,6 +687,7 @@ sub get_node_ip_info {
 			$rhh_nodes_ip_info->{$node} = undef;	
 		}
 	}
+
 	return $rhh_nodes_ip_info->{$node};
 }
 
@@ -753,9 +771,16 @@ sub config {
 				'mysql_password'	=> '',
 				'mysql_port'		=> 3306,
 				'interface'		=> 'UNCONFIGURED',
+				'read_interface' => undef,
+				'write_interface' => undef,
 				'send_arp_command'	=> 'UNCONFIGURED',
 	};
-	die "INTERNAL ERROR:  Unknown configuration variable name $variable given to sub config " if (!defined $rh_defaults->{$variable});
+
+  if (!exists $rh_defaults->{$variable})
+  {
+    die "INTERNAL ERROR:  Unknown configuration variable name $variable given to sub config " 
+  }
+
 	my $return_value;
 	if (defined $node && defined $rhh_nodes_info->{$node}->{$variable}) { $return_value = $rhh_nodes_info->{$node}->{$variable}; }
 	elsif (defined $rh_masterpair_info->{$variable}) { $return_value = $rh_masterpair_info->{$variable}; }
