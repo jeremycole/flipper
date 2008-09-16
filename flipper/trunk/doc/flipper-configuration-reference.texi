@@ -1,3 +1,5 @@
+@c TODO: document read_interface and write_interface
+
 @node   Configuration Reference
 @chapter Configuration Reference
 
