@@ -5,6 +5,15 @@ Follow the instructions here to get started with Flipper in just a few minutes.
 
 These instructions relate to the pre-release versions of Flipper.
 
+@section Before you begin
+
+Before you begin, make sure you have the following together:
+
+@itemize @bullet
+@item Two machines to act as masters, on the same subnet, vlan, etc. and capable of floating an IP address between them.
+@item Two IP addresses reserved to share between the masters for reads and writes.
+@item
+
 @section Installation
 
 First of all, check out Flipper from the Proven Scaling Subversion repository to the node you'll use for managing your masterpairs.
