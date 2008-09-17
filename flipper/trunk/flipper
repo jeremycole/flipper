@@ -392,6 +392,7 @@ sub ipmove {
 	my $from_interface;
 	my $old_write_dbh;
 	my $new_write_dbh;
+	my $quiesce_obj;
 	print "About to get IP info from $from\n" if $rh_options->{debug};
 	my $rhh_from_ip_info = get_node_ip_info($from);
 	if (defined $rhh_from_ip_info) {
@@ -424,6 +425,31 @@ sub ipmove {
 	if ($ip eq 'write') {
 		# make the current write node read only
 		$old_write_dbh = get_node_dbh($from);
+		if (defined $old_write_dbh) {
+			$old_write_dbh->do('SET GLOBAL read_only = 1');
+		}
+	}
+	my $quiesce_strategy = config('quiesce_strategy');
+	if (defined $quiesce_strategy) {
+		my $quiesce_module = "Flipper::Quiesce::$quiesce_strategy";
+		eval "use $quiesce_module";
+		if ($@) {
+			print "WARNING:  Quiesce strategy $quiesce_strategy is configured, but no module exists to handle it.\n";
+		} else {
+			$quiesce_obj = $quiesce_module->new();
+			die "ERROR: Couldn't create quiesce object for strategy $quiesce_strategy.\n";
+		}
+	}
+	
+	# If a quiesce strategy is defined, valid, and we've been able to create an object, run the ipdown method
+	if (defined $quiesce_obj) {
+		if (defined $old_write_dbh) {
+			# WARNING! ACHTUNG!  The calling interface to this WILL change in the future.
+			$quiesce_obj->before_ipdown($old_write_dbh);
+		}
+	}
+
+	if ($ip eq 'write') {
 		my $synced = 0;
 		# How should we handle errors etc. here?
 		# CONN SYNC IG_FR_ER ACTION
@@ -433,7 +459,6 @@ sub ipmove {
 		#  n    na     n     error, return
 		#  n    na     y     warn, continue
 		if (defined $old_write_dbh) {
-			$old_write_dbh->do('SET GLOBAL read_only = 1');
 			# wait for replication to catch up
 			$synced = sync_replication({		master		=> $from,
 								slave		=> $to,
@@ -485,6 +510,15 @@ sub ipmove {
 			}
 		}
 	}
+
+	# If a quiesce strategy is defined, valid, and we've been able to create an object, run the after_ipdown method
+	if (defined $quiesce_obj) {
+		if (defined $old_write_dbh) {
+			# WARNING! ACHTUNG!  The calling interface to this WILL change in the future.
+			$quiesce_obj->after_ipdown($old_write_dbh);
+		}
+	}
+
 	if ($ip eq 'write') {
 		# Make the new write node read/write
 		# We've already verified that we have a connection to the DB
@@ -774,6 +808,7 @@ sub config {
 				'read_interface' => undef,
 				'write_interface' => undef,
 				'send_arp_command'	=> 'UNCONFIGURED',
+				'quiesce_strategy' => undef,
 	};
 
   if (!exists $rh_defaults->{$variable})
