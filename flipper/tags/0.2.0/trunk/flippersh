@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Sys::Syslog;
+
+openlog('flippersh','','');
+
+my $command = 'shell';
+if (scalar @ARGV > 0 && $ARGV[0] eq '-c') {
+    $command = $ARGV[1];
+}
+if ($command=~m%uname -s;(?:/sbin/|/usr/sbin/)?ifconfig -a$%
+    or $command=~m%sudo (?:/sbin/|/usr/sbin/)?ifconfig [^;]+$%
+    or $command=~m%sudo (?:/sbin|/usr/sbin/)?arping [^;]+$%) {
+    syslog('info',"Allowing command: $command");
+    closelog();
+    exec "sh", "-c", $command;
+}
+
+syslog('info',"Refusing command: $command");
+closelog();
+die "You can't do that.\n";
