@@ -45,3 +45,5 @@ sub after_ipdown {
 	my $self = shift;
 	return;
 }
+
+1;

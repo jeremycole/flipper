@@ -355,7 +355,10 @@ sub ipup {
 	my $ip_addr = $rh_masterpair_info->{$rh_params->{ip}.'_ip'};
 	my $path_to_ifconfig = config('path_to_ifconfig', $node);
 	# determine interface to use
-	my ($interface) = interface_for_node($node, $rh_params->{interface}, $rh_params->{ip});
+	my ($interface) = interface_for_node(	{	node =>		$node,
+							interface =>	$rh_params->{interface},
+							ip =>		$rh_params->{ip}
+						});
 	print "Using interface $interface on $node to bring up $ip IP.\n" if $rh_options->{verbose};
 	my $netmask = $rh_masterpair_info->{netmask};
 	if ($rhh_node_ip_info->{os}=~/(Linux|SunOS)/) {
@@ -390,8 +393,8 @@ sub ipmove {
 	}
 	print "INFO: Moving $ip from $from to $to\n" if $rh_options->{verbose};
 	my $from_interface;
-	my $old_write_dbh;
-	my $new_write_dbh;
+	my $from_dbh;
+	my $to_dbh;
 	my $quiesce_obj;
 	print "About to get IP info from $from\n" if $rh_options->{debug};
 	my $rhh_from_ip_info = get_node_ip_info($from);
@@ -422,14 +425,17 @@ sub ipmove {
 			print "WARNING: Won't attempt to take down $ip IP on $from node.\n";
 		}
 	}
+
+	# make a DBI connection to the node we're moving the IP from
+	$from_dbh = get_node_dbh($from);
+
 	if ($ip eq 'write') {
 		# make the current write node read only
-		$old_write_dbh = get_node_dbh($from);
-		if (defined $old_write_dbh) {
-			$old_write_dbh->do('SET GLOBAL read_only = 1');
+		if (defined $from_dbh) {
+			$from_dbh->do('SET GLOBAL read_only = 1');
 		}
 	}
-	my $quiesce_strategy = config('quiesce_strategy');
+	my $quiesce_strategy = config('quiesce_strategy', $from);
 	if (defined $quiesce_strategy) {
 		my $quiesce_module = "Flipper::Quiesce::$quiesce_strategy";
 		eval "use $quiesce_module";
@@ -437,15 +443,18 @@ sub ipmove {
 			print "WARNING:  Quiesce strategy $quiesce_strategy is configured, but no module exists to handle it.\n";
 		} else {
 			$quiesce_obj = $quiesce_module->new();
-			die "ERROR: Couldn't create quiesce object for strategy $quiesce_strategy.\n";
+			die "ERROR: Couldn't create quiesce object for strategy $quiesce_strategy.\n" if (!defined $quiesce_obj);
 		}
 	}
 	
 	# If a quiesce strategy is defined, valid, and we've been able to create an object, run the ipdown method
 	if (defined $quiesce_obj) {
-		if (defined $old_write_dbh) {
+		if (defined $rh_options->{debug}) {
+			$quiesce_obj->set_debug(1);
+		}
+		if (defined $from_dbh) {
 			# WARNING! ACHTUNG!  The calling interface to this WILL change in the future.
-			$quiesce_obj->before_ipdown($old_write_dbh);
+			$quiesce_obj->before_ipdown($from_dbh);
 		}
 	}
 
@@ -458,7 +467,7 @@ sub ipmove {
 		#  y    n      y     warn, continue, leave r/o to protect repl when failed host comes back
 		#  n    na     n     error, return
 		#  n    na     y     warn, continue
-		if (defined $old_write_dbh) {
+		if (defined $from_dbh) {
 			# wait for replication to catch up
 			$synced = sync_replication({		master		=> $from,
 								slave		=> $to,
@@ -468,7 +477,7 @@ sub ipmove {
 					print "WARNING:  Replication could not be synced.\n";
 				} else {
 					print "ERROR: Replication could not be synced.  Write IP won't be moved.\n";
-					$old_write_dbh->do('SET GLOBAL read_only = 0');
+					$from_dbh->do('SET GLOBAL read_only = 0');
 					return;
 				}
 			}
@@ -482,8 +491,8 @@ sub ipmove {
 				return;
 			}
 		}
-		$new_write_dbh = get_node_dbh($to);
-		if (!defined $new_write_dbh) {
+		$to_dbh = get_node_dbh($to);
+		if (!defined $to_dbh) {
 			print "ERROR: Couldn't connect to MySQL server on $to node.  Write IP won't be moved.\n";
 			return;
 		}
@@ -513,16 +522,16 @@ sub ipmove {
 
 	# If a quiesce strategy is defined, valid, and we've been able to create an object, run the after_ipdown method
 	if (defined $quiesce_obj) {
-		if (defined $old_write_dbh) {
+		if (defined $from_dbh) {
 			# WARNING! ACHTUNG!  The calling interface to this WILL change in the future.
-			$quiesce_obj->after_ipdown($old_write_dbh);
+			$quiesce_obj->after_ipdown($from_dbh);
 		}
 	}
 
 	if ($ip eq 'write') {
 		# Make the new write node read/write
 		# We've already verified that we have a connection to the DB
-		$new_write_dbh->do('SET GLOBAL read_only = 0');
+		$to_dbh->do('SET GLOBAL read_only = 0');
 	}
 	my $ipup_success = ipup({		node		=> $to,
 						ip		=> $ip,
@@ -593,7 +602,9 @@ sub sendarp {
 	else {
 		# prepare the following variables for double-quoting into sendarp_command
 		# interface, ip, broadcast addr, netmask
-		my ($dummy, $sendarp_interface) = interface_for_node($node, $rh_params->{interface}, $rh_params->{ip});
+		my ($dummy, $sendarp_interface) = interface_for_node({		node =>		$node,
+										ip =>		$rh_params->{ip}
+									});
 		my $sendarp_ip = $rh_masterpair_info->{$rh_params->{ip}.'_ip'};
 		my $sendarp_broadcast = $rh_masterpair_info->{'broadcast'} || '';
 		my $sendarp_netmask = $rh_masterpair_info->{'netmask'} || '';
@@ -609,70 +620,90 @@ sub _quote { qq!"$_[0]"! }
 
 sub interface_for_node {
 	# determine which interface to use for a particular node
-	# takes one compulsory and one optional parameter.
-	# compulsory parameter is the node name.  optional parameter is a physical interface name eg. fxp0, eth0.
+	# takes one compulsory and two optional parameters.
+	# compulsory parameter is the node name.  optional parameters are a physical interface name eg. fxp0, eth0, and an ip name
 	# if a physical interface is supplied, we'll use that one
 	# if a physical interface is not supplied, we'll work out which physical interface to use
 	# (this assumes there's only one on the node - if there's > 1, it needs configuring in the metadata)
 	# once we've identified the interface, we'll determine if it needs a logical interface number and if it does, we'll find the next one
 	# returns an array with two elements - the first is the interface name including logical interface number, second is physical interface name
 	# (first can be used for bringing up/down aliases, second can be used for sending arps)
-	my $node = shift || die "INTERNAL ERROR:  No node specified to sub interface_for_node ";
-	my $interface = shift;
-	my $ip = shift;
-
+	my $rh_params = shift || die "INTERNAL ERROR: No parameters hashref supplied to sub interface_for_node ";
+	my $node = $rh_params->{node} || die "INTERNAL ERROR:  No node specified to sub interface_for_node ";
+	my $interface = $rh_params->{interface};
+	my $ip_name = $rh_params->{ip};
+	
+	# Get IP/OS information from the given node
 	my $rhh_node_ip_info = get_node_ip_info($node,1) || die "INTERNAL ERROR:  Couldn't get IP information from node $node ";
-	if (!defined $interface) {
-		# we've not been given an interface in the parameters to this subroutine.  is it in the metadata?
-		$interface = config('interface', $node);
-		if ($interface eq 'UNCONFIGURED') {
-			# it's not in the metadata.  if the node only has one interface, we can use that
-			# if not, throw an error as it will have to be configured in metadata
-			my $candidate_if;
-			foreach my $if (keys %{$rhh_node_ip_info->{interfaces}}) {
-				$if=~s/:\d+$//;
-				if (!defined $candidate_if) {
-					$candidate_if=$if;
-				}
-				else {
-					if ($if ne $candidate_if) {
-						die "ERROR:  Couldn't determine which interface to use on node $node.  This needs configuring in metadata.\n";
+
+	# check to see if we've got read_interface or write_interface defined in the configuration
+	# if we have, then those settings are used as far as we can and they override everything else
+	my $ip_named_interface;
+  	if (defined $ip_name) {
+		my $log = config($ip_name . "_interface", $node);
+		if (defined $log) {
+			$ip_named_interface = $log;
+ 		}
+  	}
+
+	# stage 1:  work out the physical interface
+	if (defined $ip_named_interface) {
+		# an interface is specified in the config for this IP, so use that
+		# here we determine the physical interface - if a logical interface number is also specified, we'll strip it
+		# note that this overrides the 'interface' config setting
+		$interface = $ip_named_interface;
+		$interface=~s/\:\d+$//;
+	}
+	else {
+		if (!defined $interface) {
+			# we've not been given an interface in the parameters to this subroutine.  is it in the metadata?
+			$interface = config('interface', $node);
+			if ($interface eq 'UNCONFIGURED') {
+				# it's not in the metadata.  if the node only has one interface, we can use that
+				# if not, throw an error as it will have to be configured in metadata
+				my $candidate_if;
+				foreach my $if (keys %{$rhh_node_ip_info->{interfaces}}) {
+					$if=~s/:\d+$//;
+					if (!defined $candidate_if) {
+						$candidate_if=$if;
+					}
+					else {
+						if ($if ne $candidate_if) {
+							die "ERROR:  Couldn't determine which interface to use on node $node.  This needs configuring in metadata.\n";
+						}
 					}
 				}
+				# we've only got one interface, so use it
+				$interface = $candidate_if;
 			}
-			# we've only got one interface, so use it
-			$interface = $candidate_if;
 		}
 	}
+
+	# stage 2:  work out the logical interface number, if the OS requires it
 	my $interface_with_logic = $interface;
-	
-  if (defined $ip)
-  {
-    my $log = config($ip . "_interface", $node);
-    if (defined $log)
-    {
-      $interface_with_logic = $log;
-    }
-  }
-	
-	elsif ($rhh_node_ip_info->{os} =~ /(Linux|SunOS)/)
-	{
-		# SVR4-based operating system on the node
-		# need to work out first available logical interface number
-		my %taken_logical_interfaces;
-		foreach my $if (keys %{$rhh_node_ip_info->{interfaces}}) {
-			if ($if=~/^$interface:(\d+)$/) {
-				$taken_logical_interfaces{$1}=1;
-			}
+	if ($rhh_node_ip_info->{os}=~/(Linux|SunOS)/) {
+		if (defined $ip_named_interface && $ip_named_interface=~/\:\d+$/) {
+			# an interface is specified in the config for this IP
+			# and it's also got a logical interface number, so use it.
+			$interface_with_logic = $ip_named_interface;
 		}
-		my $logical_interface = 0;
-		for (my $i=0; $i < 32767; $i++) {
-			if (!defined $taken_logical_interfaces{$i}) {
-				$logical_interface=$i;
-				last;
+		else {
+			# need to work out first available logical interface number
+			my %taken_logical_interfaces;
+			foreach my $if (keys %{$rhh_node_ip_info->{interfaces}}) {
+				if ($if=~/^$interface:(\d+)$/) {
+					$taken_logical_interfaces{$1}=1;
+				}
 			}
+			my $logical_interface = 0;
+			for (my $i=0; $i < 32767; $i++) {
+				if (!defined $taken_logical_interfaces{$i}) {
+					$logical_interface=$i;
+					last;
+				}
+			}
+			$interface_with_logic="$interface:$logical_interface";
 		}
-		$interface_with_logic="$interface:$logical_interface";
 	}
 	return ($interface_with_logic, $interface);
 }
