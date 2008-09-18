@@ -153,6 +153,12 @@ If the path to @command{ifconfig} (see @ref{path_to_ifconfig configuration varia
 
 If you are not using a @ref{send_arp_command configuration variable} in your environment, then there is no need to specify one here.  If you're using something other than @command{/usr/sbin/arping}, you should change the sudoers line accordingly.
 
+@subsubsection Restricting ssh access
+
+If you use a special account solely for Flipper on the nodes, sometimes called a headless, role or anonymous account, then it is usually desirable to use a restricted shell for that account to stop the role account being used for anonymous actions on the server.
+
+An example restricted shell for use with Flipper can be found in @file{flippersh}.  This assumes @command{/sbin/arping} is being used in your @ref{send_arp_command configuration variable} - if something else (or indeed nothing) is being used, change the restricted shell accordingly.
+
 @section MySQL configuration
 
 Flipper needs to connect to MySQL on the nodes.
