@@ -1,5 +1,5 @@
 Name: flipper
-Version: 0.1.9
+Version: 0.2.0
 Release: 0
 License: LGPL
 URL: http://www.provenscaling.com/
@@ -15,6 +15,7 @@ Manages a MySQL-based master-master (single active) failover system
 %files
 %defattr(-,root,root,-)
 /usr/bin/flipper
+/usr/bin/flippersh
 /usr/lib/perl5/site_perl/Flipper/Metadata.pm
 /usr/lib/perl5/site_perl/Flipper/Metadata/DBI.pm
 /usr/lib/perl5/site_perl/Flipper/Metadata/Dummy.pm
