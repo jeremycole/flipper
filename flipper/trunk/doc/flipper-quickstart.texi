@@ -85,7 +85,7 @@ Linux does not send ARP messages out automatically, although it does handle rece
 On RedHat Enterprise Linux, CentOS and Fedora, the @code{arping} command, supplied with the operating system, can be used to send ARP messages.  In order to use @code{arping}, insert a row into the masterpair table.
 
 @example
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'send_arp_command', 'arping -I $sendarp_interface -c 5 -U -A $sendarp_ip');
+INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'send_arp_command', '/sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip');
 @end example
 
 You may need to insert a row into the masterpair table for the broadcast address of the network containing the nodes if this is required by the command you're using to send ARP messages.

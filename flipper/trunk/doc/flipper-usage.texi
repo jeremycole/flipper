@@ -27,7 +27,7 @@ To display the configuration of a masterpair and it's nodes, use the @command{co
 $ @b{flipper customerdata config}
 MASTERPAIR: customerdata
         write_ip: 192.168.4.54
-        send_arp_command: arping -I $sendarp_interface -c 5 -U -A $sendarp_ip
+        send_arp_command: /sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip
         read_ip: 192.168.4.55
         netmask: 255.255.240.0
 NODE: dell_2850

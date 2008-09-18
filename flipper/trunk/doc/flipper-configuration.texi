@@ -144,14 +144,14 @@ We recommend that you restrict sudo usage to the bare minimum that Flipper requi
 In order to do this, add the following line to your sudoers file.  Always edit the sudoers file by using the @command{visudo} command.
 
 @example
-flipper ALL = NOPASSWD: /sbin/ifconfig, /usr/sbin/arping
+flipper ALL = NOPASSWD: /sbin/ifconfig, /sbin/arping
 @end example
 
-This command instructs sudo to allow the @samp{flipper} user access to run the @command{/sbin/ifconfig} and @command{/usr/sbin/arping} commands as root without a password.
+This command instructs sudo to allow the @samp{flipper} user access to run the @command{/sbin/ifconfig} and @command{/sbin/arping} commands as root without a password.
 
 If the path to @command{ifconfig} (see @ref{path_to_ifconfig configuration variable}) is different on your system, you should change the sudoers line accordingly.
 
-If you are not using a @ref{send_arp_command configuration variable} in your environment, then there is no need to specify one here.  If you're using something other than @command{/usr/sbin/arping}, you should change the sudoers line accordingly.
+If you are not using a @ref{send_arp_command configuration variable} in your environment, then there is no need to specify one here.  If you're using something other than @command{/sbin/arping}, you should change the sudoers line accordingly.
 
 @subsubsection Restricting ssh access
 

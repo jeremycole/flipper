@@ -15,7 +15,7 @@ The most convenient way to send out ARP announcements differs from distribution 
 
 @subsubsection RHEL/CentOS
 
-The @command{/sbin/arping} command (supplied as standard with the distribution) can be used to send the ARP announcements.  The best value for @ref{send_arp_command configuration variable} is @code{arping -I $sendarp_interface -c 5 -U -A $sendarp_ip}.
+The @command{/sbin/arping} command (supplied as standard with the distribution) can be used to send the ARP announcements.  The best value for @ref{send_arp_command configuration variable} is @code{/sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip} - supply the absolute pathname because @file{/sbin} isn't normally in the default path.
 
 @subsubsection Debian
 
