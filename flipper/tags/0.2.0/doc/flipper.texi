@@ -1,0 +1,60 @@
+\input texinfo @c -*- texinfo -*-
+@setfilename flipper.texi
+@settitle Flipper Manual
+
+@copying
+Copyright @copyright{} 2007-2008 Proven Scaling.
+@end copying
+
+@titlepage
+@title Flipper
+@subtitle A system for managing MySQL replicating master-master pairs
+@author Mike Griffiths and others
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@syncodeindex fn cp
+@synindex pg cp
+
+@node Top
+@top flipper
+@menu
+* Overview::
+* Installation::
+* Quick Start::
+* Configuration::
+* Usage::
+
+* Bugs::
+* Future Developments::
+* Platform Notes::
+
+* Configuration Reference::
+
+* Credits::
+* Contacting Proven Scaling::
+
+* Index::
+@end menu
+
+@include flipper-overview.texi
+@include flipper-installation.texi
+@include flipper-quickstart.texi
+@include flipper-configuration.texi
+@include flipper-usage.texi
+@include flipper-bugs.texi
+@include flipper-future.texi
+@include flipper-platform.texi
+@include flipper-configuration-reference.texi
+@include flipper-credits.texi
+@include flipper-contact.texi
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye
