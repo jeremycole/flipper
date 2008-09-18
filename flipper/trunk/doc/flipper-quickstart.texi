@@ -12,7 +12,7 @@ Before you begin, make sure you have the following together:
 @itemize @bullet
 @item Two machines to act as masters, on the same subnet, vlan, etc. and capable of floating an IP address between them.
 @item Two IP addresses reserved to share between the masters for reads and writes.
-@item
+@end itemize
 
 @section Installation
 
@@ -100,6 +100,18 @@ Flipper needs to be given authentication information so it can connect to the My
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_user', '<mysql username>');
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_password', '<mysql password>');
 @end example
+
+@subsection SSH authentication
+
+By default, Flipper will ssh to the nodes as the user running the @command{flipper} script.  To change this, either set the @ref{ssh_user configuration variable} configuration variable or alternatively edit @file{~/.ssh/config}.
+
+@example
+INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'ssh_user', '<ssh username>');
+@end example
+
+By default, Flipper will use sudo for privilege escalation on the nodes, where required.  This is required for non-superusers to execute operations such as bringing down/up IP addresses.  You will need to configure @command{sudo} on the nodes to enable this.  If you set @ref{ssh_user configuration variable} to 'root', you can turn the use of @command{sudo} off if required by setting the @ref{use_sudo configuration variable} to 0.
+
+The security implications of the various possible settings for @ref{ssh_user configuration variable}, @ref{use_sudo configuration variable}, and ssh and sudo configuration on the nodes are significant.  You are strongly advised to make yourself aware of them.  See @ref{ssh and sudo security} for more information.
 
 @subsection Check configuration
 

@@ -89,7 +89,7 @@ The MySQL server must be listening on the base IP address of the node.
 
 @subsubsection Read and Write IP addresses
 
-The read and write IP addresses are used by external clients to query the data stored on the masterpair.  Clients performing read operations only should connect to the read IP address.  Clients performing read/write operations should connect to the write IP address.  These are stored as @ref{read_ip configuration variable}} and @ref{write_ip configuration variable} at masterpair level.
+The read and write IP addresses are used by external clients to query the data stored on the masterpair.  Clients performing read operations only should connect to the read IP address.  Clients performing read/write operations should connect to the write IP address.  These are stored as @ref{read_ip configuration variable} and @ref{write_ip configuration variable} at masterpair level.
 
 The read and write IP addresses need not be on the same network (either in a physical or logical sense) as the base address of the nodes.  They do however need to be on the same network as each other.
 
@@ -105,7 +105,7 @@ Flipper needs to know which physical network interface it should use for the rea
 
 The interface is stored as @ref{interface configuration variable}.  This can be stored at either masterpair level, or node level.  If both nodes are to use the same interface for the read and write IPs, then store it at masterpair level, and it will be applied to both nodes.
 
-@section SSH configuration
+@section SSH and sudo configuration
 
 In order to execute commands on the nodes, Flipper needs to be able to connect to the nodes using ssh.  The following configuration variables are used to control how Flipper connects using ssh to the nodes:
 
@@ -118,17 +118,40 @@ In order to execute commands on the nodes, Flipper needs to be able to connect t
 @ref{use_sudo configuration variable}
 @end itemize
 
-The default configuration is that @ref{ssh_ip configuration variable} is unset, @ref{ssh_user configuration variable} is @code{root} and @ref{use_sudo configuration variable} is set to 0, representing "off".
+The default configuration is that @ref{ssh_ip configuration variable} is unset, @ref{ssh_user configuration variable} is unset and @ref{use_sudo configuration variable} is set to 1, representing "on".
 
 As described above, if the ssh daemon is bound to a different IP address to the base address on any node, then you can store the IP address for ssh connections as @ref{ssh_ip configuration variable} at node level.  If Flipper is to use the base IP address of a node for ssh connections, @ref{ssh_ip configuration variable} should not be defined for that node.
 
-@ref{ssh_user configuration variable} is the user which Flipper will connect as via ssh.  If this is changed to be a non-@code{root} user, then you should set @ref{use_sudo configuration variable} to 1.  This will enable Flipper to use sudo to execute commands which require superuser access - typically the commands used to bring up and take down IP aliases on the nodes.
+@ref{ssh_user configuration variable} is the user which Flipper will connect as via ssh.  If this is unset, Flipper will use the current user to ssh to the nodes, unless overridden by a setting in @file{~/.ssh/config}.
+
+If the @ref{ssh_user configuration variable} is a non-@code{root} user, then you should leave @ref{use_sudo configuration variable} set to 1.  This will enable Flipper to use sudo to execute commands which require superuser access - typically the commands used to bring up and take down IP aliases on the nodes.
+
+If you have set @ref{ssh_user configuration variable} to @samp{root}, then you can disable the use of sudo by changing the @ref{use_sudo configuration variable} to 0.
+
+Although @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} can both be specified at node level, we recommend that they are only specified at masterpair level and nodes within a masterpair are identically configured.
+
+@node ssh and sudo security
+@subsection SSH and sudo Security
 
 You should ensure that you are fully aware of the security implications of how you configure Flipper to work with ssh.  The default settings of @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} may not be appropriate for the security environment in your organisation.
 
-We would recommend that Flipper be configured to connect to nodes as a user with a restricted shell, allowing connections only from the appropriate IP address(es), and privilege escalation for that user via sudo should be restricted to the required commands only.
+We would recommend that Flipper be configured to connect to nodes as a specified user with a restricted shell, allowing connections only from the appropriate IP address(es), and privilege escalation for that user via sudo should be restricted to the required commands only.
 
-Although @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} can both be specified at node level, we recommend that they are only specified at masterpair level and nodes within a masterpair are identically configured.
+@subsubsection Restricting sudo usage
+
+We recommend that you restrict sudo usage to the bare minimum that Flipper requires to operate.  This is particularly important if you are using a role account (eg. an account called @samp{flipper}) for Flipper to use on the nodes.
+
+In order to do this, add the following line to your sudoers file.  Always edit the sudoers file by using the @command{visudo} command.
+
+@example
+flipper ALL = NOPASSWD: /sbin/ifconfig, /usr/sbin/arping
+@end example
+
+This command instructs sudo to allow the @samp{flipper} user access to run the @command{/sbin/ifconfig} and @command{/usr/sbin/arping} commands as root without a password.
+
+If the path to @command{ifconfig} (see @ref{path_to_ifconfig configuration variable}) is different on your system, you should change the sudoers line accordingly.
+
+If you are not using a @ref{send_arp_command configuration variable} in your environment, then there is no need to specify one here.  If you're using something other than @command{/usr/sbin/arping}, you should change the sudoers line accordingly.
 
 @section MySQL configuration
 

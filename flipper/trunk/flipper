@@ -765,6 +765,11 @@ sub node_ssh_command {
 	my $requires_root = shift || 0;
 	# determine which user we should use to ssh to the node
 	my $ssh_user = config('ssh_user', $node);
+	if (defined $ssh_user) {
+		$ssh_user="-l $ssh_user";
+	} else {
+		$ssh_user = '';
+	}
 	# If the ssh_ip node variable is set, use that to ssh to the host.
 	# Useful if ssh bound to different IP than mysql.
 	my $ssh_ip = defined $rhh_nodes_info->{$node}->{ssh_ip} ? $rhh_nodes_info->{$node}->{ssh_ip} : $rhh_nodes_info->{$node}->{ip};
@@ -776,12 +781,12 @@ sub node_ssh_command {
 			$command = "sudo $command";
 		}
 	}
-	print "DEBUG:  Executing ssh -l $ssh_user $ssh_ip $command\n" if $rh_options->{debug};
+	print "DEBUG:  Executing ssh $ssh_user $ssh_ip $command\n" if $rh_options->{debug};
 	# TODO:  Error reporting can be improved here by using IPC::Open3 to
 	# capture STDERR as well as STDOUT from the external ssh command
-	my $result= `ssh -o "ConnectTimeout 10" -l $ssh_user $ssh_ip $command`;
+	my $result= `ssh -o "ConnectTimeout 10" $ssh_user $ssh_ip $command`;
 	if ($?) {
-		print "ERROR:  Error occurred when executing ssh -l $ssh_user $ssh_ip $command\n";
+		print "ERROR:  Error occurred when executing ssh $ssh_user $ssh_ip $command\n";
 		return;
 	}
 	else {
@@ -830,9 +835,9 @@ sub config {
 	my $variable = shift || die "INTERNAL ERROR:  No configuration variable name given to sub config ";
 	my $node = shift || die "INTERNAL ERROR:  No node name given to sub config ";
 	my $rh_defaults = {	'path_to_ifconfig'	=> '/sbin',
-				'ssh_user'		=> 'root',
-				'use_sudo'		=> 0,
-				'mysql_user'		=> 'rw',	# TODO: change this for release to 'root'
+				'ssh_user'		=> undef,
+				'use_sudo'		=> 1,
+				'mysql_user'		=> 'root',
 				'mysql_password'	=> '',
 				'mysql_port'		=> 3306,
 				'interface'		=> 'UNCONFIGURED',

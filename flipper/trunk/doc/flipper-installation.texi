@@ -1,9 +1,13 @@
 @node   Installation
 @chapter Installation
 
-Currently, Flipper can only be obtained directly from Proven Scaling's public Subversion repository.  Pre-built packages will be available at some point in the future.  Don't be put off by this, though - obtaining and installing Flipper is very simple.
-
 @section Obtaining Flipper
+
+@subsection Packages
+
+Pre-built packages for flipper can be downloaded from @uref{http://mirror.provenscaling.com/extras/provenscaling/}.  If a package is not available for your operating environment, then don't fear - it's very easy to download the source code and install it.
+
+@subsection Source Code
 
 To fetch the most recent stable version of Flipper from Subversion, simply run the following command in a shell:
 
@@ -35,7 +39,7 @@ $
 
 If you want to check Flipper out to a different directory, specify something other than @samp{flipper} as the second parameter to @command{svn checkout}.
 
-@section Installing Flipper
+@section Installing Flipper from svn
 
 @subsection Where's perl?
 
@@ -61,4 +65,5 @@ The @file{flipper} script can run anywhere, so you can copy it to your home dire
 
 If you do this, and you're only going to ever invoke Flipper as @command{./flipper}, you can copy the @file{lib/Flipper} directory from subversion to the same directory as the @file{flipper} script.  This works by virtue of the current working directory always appearing in @code{@@INC}.
 
-If you're on Mac OS X with a case insensitive filesystem, you won't be able to put the @file{Flipper} subdirectory and the @file{flipper} script in the same directory.
+If you're on Mac OS X with a case insensitive filesystem, you won't be able to put the @file{Flipper} subdirectory and the @file{flipper} script in the same directory.  The workaround is to put the @file{Flipper} directory into @file{/Library/Perl}, as superuser privileges shouldn't be required for that.
+
