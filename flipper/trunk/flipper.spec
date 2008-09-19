@@ -8,6 +8,7 @@ Summary: Manages a MySQL-based master-master (single active) failover system
 Group: Applications/Databases
 Buildroot: /tmp/flipper_buildroot
 BuildArch: noarch
+Requires: perl-DBD-mysql
 
 %description
 Manages a MySQL-based master-master (single active) failover system 
