@@ -1,4 +1,8 @@
-# PDF, Portable Document Format
+all: html pdf
+
+html: flipper.html
+pdf: flipper.pdf
+
 flipper.pdf: flipper.texi
 	#sed -e 's|@image{[^}]*} *||g' <$< >flipper-tmp.texi
 	cp flipper.texi flipper-tmp.texi
@@ -10,3 +14,6 @@ flipper.pdf: flipper.texi
 	mv flipper-tmp.pdf $@
 	rm -f flipper-tmp.*
 	touch $@
+
+flipper.html: flipper.texi
+	texi2html flipper.texi

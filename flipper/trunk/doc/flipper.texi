@@ -1,26 +1,41 @@
 \input texinfo @c -*- texinfo -*-
 @setfilename flipper.texi
 @settitle Flipper Manual
+@set language en
 
 @copying
-Copyright @copyright{} 2007-2008 Proven Scaling.
+Copyright @copyright{} 2007-2008 Proven Scaling LLC and Proven Scaling Ltd.
 @end copying
 
-@titlepage
-@title Flipper
-@subtitle A system for managing MySQL replicating master-master pairs
-@author Mike Griffiths and others
-
-@page
-@vskip 0pt plus 1filll
-@insertcopying
-@end titlepage
+@setchapternewpage on
+@paragraphindent 0
 
 @syncodeindex fn cp
 @synindex pg cp
 
+@c These are for HTML output only.  We should tune them.
+@set _body_tags bgcolor=white text=#000000 link=#101090 vlink=#7030B0
+@set _extra_head <style> code {color:purple} tt {color:green} samp {color:navy} pre {color:maroon} </style> 
+
+@c When we're happy with it, uncomment to remove the black boxes on the
+@c right hand side of the screen.  These show up because an hbox is being
+@c exceeded.  We should fix all of these before setting @finalout.
+@c @finalout
+
+@titlepage
+@title Flipper
+@subtitle A system for managing MySQL replicating master-master pairs
+@author Proven Scaling - www.provenscaling.com
+
+@page
+@vskip 0pt plus 1filll
+Written by Mike Griffiths and Jeremy Cole.
+@insertcopying
+@end titlepage
+
+@contents
+
 @node Top, Overview, (dir), (dir)
-@top flipper
 
 @menu
 * Overview::                    
@@ -34,11 +49,7 @@ Copyright @copyright{} 2007-2008 Proven Scaling.
 * Configuration Reference::     
 * Credits::                     
 * Contacting Proven Scaling::   
-* Index::                       @detailmenu
-
-
-
-
+* Index::
 
 @detailmenu
  --- The Detailed Node Listing ---
