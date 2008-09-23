@@ -1,4 +1,4 @@
-@node   Future Developments
+@node Future Developments, Platform Notes, Bugs, Top
 @chapter Future Developments
 
 The following are ideas for future releases of flipper:

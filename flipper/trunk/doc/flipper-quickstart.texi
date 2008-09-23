@@ -1,10 +1,21 @@
-@node   Quick Start
+@node Quick Start, Configuration, Installation, Top
 @chapter Quick Start
 
 Follow the instructions here to get started with Flipper in just a few minutes.
 
 These instructions relate to the pre-release versions of Flipper.
 
+@menu
+* Before you begin::            
+* Quick Start Installation::    
+* Metadata::                    
+* Pointing Flipper at the Metadata::  
+* Quick Start Configuration::   
+* Set up IP addresses::         
+* Using Flipper::               
+@end menu
+
+@node Before you begin, Quick Start Installation, Quick Start, Quick Start
 @section Before you begin
 
 Before you begin, make sure you have the following together:
@@ -14,6 +25,7 @@ Before you begin, make sure you have the following together:
 @item Two IP addresses reserved to share between the masters for reads and writes.
 @end itemize
 
+@node Quick Start Installation, Metadata, Before you begin, Quick Start
 @section Installation
 
 First of all, check out Flipper from the Proven Scaling Subversion repository to the node you'll use for managing your masterpairs.
@@ -28,6 +40,7 @@ Copy the @file{lib/Flipper} directory to some place in perl's @code{@@INC} on yo
 
 For more information on installing Flipper, @xref{Installation}.
 
+@node Metadata, Pointing Flipper at the Metadata, Quick Start Installation, Quick Start
 @section Metadata
 
 Flipper uses a database for storing it's configuration information.  This database can be stored in any DBMS supported by Perl's DBI, but currently only MySQL has been tested.
@@ -36,6 +49,7 @@ Create the metadata database on a node, then populate it using the schema defini
 
 Currently, Flipper requires only read access to the metadata database.
 
+@node Pointing Flipper at the Metadata, Quick Start Configuration, Metadata, Quick Start
 @section Pointing Flipper at the Metadata
 
 Flipper uses a DSN-like string to locate it's metadata, along with a username and password for authentication.
@@ -51,12 +65,22 @@ username=flippermetadata
 password=letmein
 @end example
 
+@node Quick Start Configuration, Set up IP addresses, Pointing Flipper at the Metadata, Quick Start
 @section Configuration
 
 Configuration has to be done manually at the moment.  Future versions of Flipper will allow you to use the script itself to manage the configuration.
 
 First, decide on a name for your first masterpair, and decide on names for the two nodes.
 
+@menu
+* IP address information::      
+* ARP sending command::         
+* MySQL authentication::        
+* SSH authentication::          
+* Check configuration::         
+@end menu
+
+@node IP address information, ARP sending command, Quick Start Configuration, Quick Start Configuration
 @subsection IP address information
 
 Insert rows into the masterpair and node tables for the IP addresses of the two nodes and the read and write IP addresses that you will be moving between the nodes.  See @ref{ip configuration variable}, @ref{read_ip configuration variable}, @ref{write_ip configuration variable}.
@@ -74,6 +98,7 @@ You'll also need to insert a row into the masterpair table for the netmask of th
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'netmask', '<network netmask>');
 @end example
 
+@node ARP sending command, MySQL authentication, IP address information, Quick Start Configuration
 @subsection ARP sending command
 
 When an IP address is moved from one node to another, an ARP message needs to be sent out to inform other nodes (servers, routers etc) on the network that the IP address is now available on a different physical (MAC) address.
@@ -92,6 +117,7 @@ You may need to insert a row into the masterpair table for the broadcast address
 
 For more information, see @ref{send_arp_command configuration variable}.
 
+@node MySQL authentication, SSH authentication, ARP sending command, Quick Start Configuration
 @subsection MySQL authentication
 
 Flipper needs to be given authentication information so it can connect to the MySQL servers running on the nodes.  By default, it will attempt to connect as @code{root} with no password, on port 3306.  If these defaults are not suitable, insert rows into the masterpair table to tell Flipper how to log into MySQL.  This assumes the same authentication credentials are to be used on each node.  See @ref{mysql_user configuration variable}, @ref{mysql_password configuration variable}, @ref{mysql_port configuration variable}.
@@ -101,6 +127,7 @@ INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'my
 INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_password', '<mysql password>');
 @end example
 
+@node SSH authentication, Check configuration, MySQL authentication, Quick Start Configuration
 @subsection SSH authentication
 
 By default, Flipper will ssh to the nodes as the user running the @command{flipper} script.  To change this, either set the @ref{ssh_user configuration variable} configuration variable or alternatively edit @file{~/.ssh/config}.
@@ -113,6 +140,7 @@ By default, Flipper will use sudo for privilege escalation on the nodes, where r
 
 The security implications of the various possible settings for @ref{ssh_user configuration variable}, @ref{use_sudo configuration variable}, and ssh and sudo configuration on the nodes are significant.  You are strongly advised to make yourself aware of them.  See @ref{ssh and sudo security} for more information.
 
+@node Check configuration,  , SSH authentication, Quick Start Configuration
 @subsection Check configuration
 
 Once you've pointed Flipper at the Metadata, and configured Flipper correctly, you should be able to use Flipper's @command{config} command to display the configuration information for a particular masterpair.  For example, to display all the configuration values for a masterpair called @samp{mike}:
@@ -155,6 +183,7 @@ The following masterpairs exist:
 $
 @end example
 
+@node Set up IP addresses, Using Flipper, Quick Start Configuration, Quick Start
 @section Set up IP addresses
 
 Once Flipper's configured, it's ready to use.  The @command{status} command gives an at-a-glance report on the status of a particular masterpair.  The first time you run Flipper, the read and write IPs won't be up, and the @command{status} command will give output similar to this:
@@ -185,6 +214,7 @@ NODE: second_node has write IP, is writable, replication running, 0s delay
 $
 @end example
 
+@node Using Flipper,  , Set up IP addresses, Quick Start
 @section Using Flipper
 
 This is just a quick overview of what Flipper can do.  More detail can be found elsewhere in this documentation.  Help is available on the command line by running @command{flipper --help} for usage information and @command{perldoc flipper} for a brief overview.

@@ -1,8 +1,14 @@
-@node   Usage
+@node Usage, Bugs, Configuration, Top
 @chapter Usage
 
 Typically, the read IP will be up on one node, and the write IP will be up on the other node.  There's nothing to stop you having both read and write IPs up on the same node though.  This can be very useful in certain situations, for example if you've got unbalanced hardware (one node significantly more powerful or loaded than the other) or as a short term measure if there are connectivity issues or maintenance is being carried out.
 
+@menu
+* Command Line::                
+* Commands::                    
+@end menu
+
+@node Command Line, Commands, Usage, Usage
 @section Command Line
 
 Flipper takes options, a masterpair, a command and sometimes parameters on it's command line:
@@ -17,8 +23,19 @@ The @dfn{masterpair} is specified so Flipper knows what it's going to operate on
 
 If you give flipper an unknown command or option, you'll be presented with some brief usage help.  You can also display the usage information by running @command{flipper --help}.
 
+@node Commands,  , Command Line, Usage
 @section Commands
 
+@menu
+* Displaying configuration - the @command{config} command::  
+* Displaying the status of a masterpair - the @command{status} command::  
+* Moving an IP to a node - the @command{set} command::  
+* Swapping IPs from one node to the other - the @command{swap} command::  
+* Moving IPs away from a node - the @command{disable} command::  
+* Handling a failed node - the @command{fail} command::  
+@end menu
+
+@node Displaying configuration - the @command{config} command, Displaying the status of a masterpair - the @command{status} command, Commands, Commands
 @subsection Displaying configuration - the @command{config} command
 
 To display the configuration of a masterpair and it's nodes, use the @command{config} command.  The masterpair name will be displayed, followed by the configuration variables for that masterpair.  After that, for each node, the node name and configuration variables specific to that node will be displayed:
@@ -39,6 +56,7 @@ NODE: hp_dl380
 $ 
 @end example 
 
+@node Displaying the status of a masterpair - the @command{status} command, Moving an IP to a node - the @command{set} command, Displaying configuration - the @command{config} command, Commands
 @subsection Displaying the status of a masterpair - the @command{status} command
 
 The @command{status} command can be used to display the current status of a masterpair.  It also acts as a healthcheck for the current operation of the masterpair - if there are any problems, warnings will be given.
@@ -62,6 +80,7 @@ Warnings will be displayed if there are any problems:
 @item Problems connecting to MySQL or ssh on any node
 @end itemize
 
+@node Moving an IP to a node - the @command{set} command, Swapping IPs from one node to the other - the @command{swap} command, Displaying the status of a masterpair - the @command{status} command, Commands
 @subsection Moving an IP to a node - the @command{set} command
 
 The @command{set} command ensures that the specified IP is up on the given node.  It takes two parameters - firstly the name of an IP, and secondly, the name of a node.
@@ -96,6 +115,7 @@ INFO:  The write IP is already up on the dell_2850 node.
 $
 @end example
 
+@node Swapping IPs from one node to the other - the @command{swap} command, Moving IPs away from a node - the @command{disable} command, Moving an IP to a node - the @command{set} command, Commands
 @subsection Swapping IPs from one node to the other - the @command{swap} command
 
 The @command{swap} command moves a single IP, or all IPs to the other node to the one on which they're running.  It takes an optional parameter, which is the name of an IP.  If this parameter is specified, then only the given IP will be swapped to the other node.  If this parameter is not specified, all the IPs will be moved to the other node.
@@ -120,6 +140,7 @@ NODE: hp_dl380 has write IP, is writable, replication running, 0s delay
 $ 
 @end example
 
+@node Moving IPs away from a node - the @command{disable} command, Handling a failed node - the @command{fail} command, Swapping IPs from one node to the other - the @command{swap} command, Commands
 @subsection Moving IPs away from a node - the @command{disable} command
 
 If you wish to remove all IPs from a node, perhaps to undertake some maintenance work, then use the @command{disable} command.  It requires a single parameter, which is the name of a node.  All the IPs which are up on the specified node will be moved to the other node.  If there are no IPs up on the specified node, nothing will happen and an informational message will be displayed.
@@ -146,6 +167,7 @@ INFO:  No IPs on the second_node node.
 $
 @end example
 
+@node Handling a failed node - the @command{fail} command,  , Moving IPs away from a node - the @command{disable} command, Commands
 @subsection Handling a failed node - the @command{fail} command
 
 The @command{set}, @command{swap} and @command{disable} commands all rely on being able to connect to ssh and MySQL on both nodes in order to carry out operations.  This is to ensure that the masterpair is always in a consistent, operable state.

@@ -19,25 +19,154 @@ Copyright @copyright{} 2007-2008 Proven Scaling.
 @syncodeindex fn cp
 @synindex pg cp
 
-@node Top
+@node Top, Overview, (dir), (dir)
 @top flipper
+
 @menu
-* Overview::
-* Installation::
-* Quick Start::
-* Configuration::
-* Usage::
+* Overview::                    
+* Installation::                
+* Quick Start::                 
+* Configuration::               
+* Usage::                       
+* Bugs::                        
+* Future Developments::         
+* Platform Notes::              
+* Configuration Reference::     
+* Credits::                     
+* Contacting Proven Scaling::   
+* Index::                       @detailmenu
 
-* Bugs::
-* Future Developments::
-* Platform Notes::
 
-* Configuration Reference::
 
-* Credits::
-* Contacting Proven Scaling::
 
-* Index::
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Installation
+
+* Obtaining Flipper::           
+* Installing Flipper from svn::  
+
+Obtaining Flipper
+
+* Packages::                    
+* Source Code::                 
+
+Installing Flipper from svn
+
+* Where's perl?::               
+* Copying files::               
+
+Copying files
+
+* Copying the script to your PATH::  
+* Installing into your home directory or other arbitary location::  
+
+Quick Start
+
+* Before you begin::            
+* Quick Start Installation::    
+* Metadata::                    
+* Pointing Flipper at the Metadata::  
+* Quick Start Configuration::   
+* Set up IP addresses::         
+* Using Flipper::               
+
+Configuration
+
+* IP address information::      
+* ARP sending command::         
+* MySQL authentication::        
+* SSH authentication::          
+* Check configuration::         
+
+Configuration
+
+* Metadata Storage::            
+* Metadata Access::             
+* Configuration Variables::     
+* Masterpair and Node names::   
+* Network configuration::       
+* SSH and sudo configuration::  
+* MySQL configuration::         
+
+Metadata Storage
+
+* DBI metadata storage::        
+
+Metadata Access
+
+* Data Source Naming Scheme::   
+* Authentication::              
+* Pointing Flipper at Metadata::  
+
+Network configuration
+
+* IP address configuration::    
+* Interface configuration::     
+
+IP address configuration
+
+* Node IP addresses::           
+* Read and Write IP addresses::  
+* Netmask and Broadcast addresses::  
+
+SSH and sudo configuration
+
+* ssh and sudo security::       
+
+SSH and sudo Security
+
+* Restricting sudo usage::      
+* Restricting ssh access::      
+
+Usage
+
+* Command Line::                
+* Commands::                    
+
+Commands
+
+* Displaying configuration - the @command{config} command::  
+* Displaying the status of a masterpair - the @command{status} command::  
+* Moving an IP to a node - the @command{set} command::  
+* Swapping IPs from one node to the other - the @command{swap} command::  
+* Moving IPs away from a node - the @command{disable} command::  
+* Handling a failed node - the @command{fail} command::  
+
+Bugs
+
+* Known Bugs::                  
+
+Platform Notes
+
+* Linux::                       
+* HP-UX::                       
+* Unsupported Platforms::       
+
+ARP announcements
+
+* RHEL/CentOS::                 
+* Debian::                      
+
+Configuration Reference
+
+* ip configuration variable::   
+* ssh_ip configuration variable::  
+* write_ip configuration variable::  
+* read_ip configuration variable::  
+* netmask configuration variable::  
+* broadcast configuration variable::  
+* path_to_ifconfig configuration variable::  
+* ssh_user configuration variable::  
+* use_sudo configuration variable::  
+* mysql_user configuration variable::  
+* mysql_password configuration variable::  
+* mysql_port configuration variable::  
+* interface configuration variable::  
+* send_arp_command configuration variable::  
+
+@end detailmenu
 @end menu
 
 @include flipper-overview.texi
@@ -51,10 +180,6 @@ Copyright @copyright{} 2007-2008 Proven Scaling.
 @include flipper-configuration-reference.texi
 @include flipper-credits.texi
 @include flipper-contact.texi
-
-@node Index
-@unnumbered Index
-
-@printindex cp
+@include flipper-index.texi
 
 @bye

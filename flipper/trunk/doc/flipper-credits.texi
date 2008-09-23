@@ -1,4 +1,4 @@
-@node   Credits
+@node Credits, Contacting Proven Scaling, Configuration Reference, Top
 @chapter Credits
 
 Proven Scaling would like to thank the following people for their contributions towards Flipper:
