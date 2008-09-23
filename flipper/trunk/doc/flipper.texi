@@ -39,6 +39,7 @@ Copyright @copyright{} 2007-2008 Proven Scaling.
 
 
 
+
 @detailmenu
  --- The Detailed Node Listing ---
 
@@ -127,12 +128,12 @@ Usage
 
 Commands
 
-* Displaying configuration - the @command{config} command::  
-* Displaying the status of a masterpair - the @command{status} command::  
-* Moving an IP to a node - the @command{set} command::  
-* Swapping IPs from one node to the other - the @command{swap} command::  
-* Moving IPs away from a node - the @command{disable} command::  
-* Handling a failed node - the @command{fail} command::  
+* Displaying configuration - the config command::  
+* Displaying the status of a masterpair - the status command::  
+* Moving an IP to a node - the set command::  
+* Swapping IPs from one node to the other - the swap command::  
+* Moving IPs away from a node - the disable command::  
+* Handling a failed node - the fail command::  
 
 Bugs
 
