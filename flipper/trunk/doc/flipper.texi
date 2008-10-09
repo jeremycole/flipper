@@ -37,6 +37,10 @@ Written by Mike Griffiths and Jeremy Cole.
 
 @node Top, Overview, (dir), (dir)
 
+@ifhtml
+Flipper is a tool for managing pairs of MySQL servers replicating in a master-master configuration.
+@end ifhtml
+
 @menu
 * Overview::                    
 * Installation::                
@@ -51,6 +55,7 @@ Written by Mike Griffiths and Jeremy Cole.
 * Contacting Proven Scaling::   
 * Index::
 
+@iftex
 @detailmenu
  --- The Detailed Node Listing ---
 
@@ -179,6 +184,7 @@ Configuration Reference
 * send_arp_command configuration variable::  
 
 @end detailmenu
+@end iftex
 @end menu
 
 @include flipper-overview.texi
