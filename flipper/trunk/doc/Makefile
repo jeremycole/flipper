@@ -1,8 +1,13 @@
-all: html pdf
+all: html_onefile html_manyfiles pdf
 
-html: flipper.html
+
+clean:
+	rm -rf html *.html *.pdf
+
+publish:
+	publish-docs flipper
+
 pdf: flipper.pdf
-
 flipper.pdf: flipper.texi
 	#sed -e 's|@image{[^}]*} *||g' <$< >flipper-tmp.texi
 	cp flipper.texi flipper-tmp.texi
@@ -15,5 +20,10 @@ flipper.pdf: flipper.texi
 	rm -f flipper-tmp.*
 	touch $@
 
+html_onefile: flipper.html
 flipper.html: flipper.texi
 	texi2html flipper.texi
+
+html_manyfiles: flipper.texi
+	mkdir -p html
+	echo '@import url("/style-doc.css");' | texi2html --split node --node-files --subdir=html --top-file=index.html --css-include=- flipper.texi
