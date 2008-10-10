@@ -4,7 +4,7 @@ all: html_onefile html_manyfiles pdf
 clean:
 	rm -rf html *.html *.pdf
 
-publish:
+publish: all
 	publish-docs flipper
 
 pdf: flipper.pdf
