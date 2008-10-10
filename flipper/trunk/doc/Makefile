@@ -26,4 +26,4 @@ flipper.html: flipper.texi
 
 html_manyfiles: flipper.texi
 	mkdir -p html
-	echo '@import url("/style-doc.css");' | texi2html --split node --node-files --subdir=html --top-file=index.html --css-include=- flipper.texi
+	texi2html --init-file=support/flipper.init --split node --node-files --subdir=html --top-file=index.html flipper.texi

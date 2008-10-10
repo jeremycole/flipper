@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+
+# Customizations:
+#
+#   print_page_head
+#     Eliminate some of the garbage in the header, and simplify the CSS include.
+#
+#   print_page_foot
+#     We don't really want to print our username and time at the bottom of
+#     every single page.
+#
+
+$print_page_head              = \&flipper_print_page_head;
+$print_page_foot              = \&flipper_print_page_foot;
+
+sub flipper_print_page_head($)
+{
+    my $fh = shift;
+    my $longtitle = "$Texi2HTML::THISDOC{'title_unformatted'}";
+    $longtitle .= ": $Texi2HTML::UNFORMATTED{'This'}" if exists $Texi2HTML::UNFORMATTED{'This'};
+    my $encoding = '';
+    $encoding = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=$ENCODING\">" if (defined($ENCODING) and ($ENCODING ne ''));
+    print $fh <<EOT;
+$DOCTYPE
+<html>
+<head>
+<title>$longtitle</title>
+<link rel="stylesheet" type="text/css" media="screen" href="/style-doc.css">
+$encoding
+</head>
+
+<body $BODYTEXT>
+$AFTER_BODY_OPEN
+EOT
+}
+
+sub flipper_print_page_foot($)
+{
+    my $fh = shift;
+    print $fh <<EOT;
+<div class="copyright">Copyright &copy; 2008 Proven Scaling LLC and Proven Scaling Ltd.  All rights reserved.</div>
+</body>
+</html>
+EOT
+}
+
