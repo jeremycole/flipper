@@ -1,4 +1,4 @@
-@node Contacting Proven Scaling, Indexes, Credits, Top
+@node Contacting Proven Scaling, Variable Index, Credits, Top
 @chapter Contacting Proven Scaling
 @cindex author, contacting
 @cindex contacting the author

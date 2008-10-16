@@ -10,22 +10,24 @@ Variables are either compulsory or optional.  They are either relevant to nodes 
 
 @menu
 * ip configuration variable::   
-* ssh_ip configuration variable::  
 * write_ip configuration variable::  
 * read_ip configuration variable::  
 * netmask configuration variable::  
 * broadcast configuration variable::  
 * path_to_ifconfig configuration variable::  
+* ssh_ip configuration variable::  
 * ssh_user configuration variable::  
 * use_sudo configuration variable::  
 * mysql_user configuration variable::  
 * mysql_password configuration variable::  
 * mysql_port configuration variable::  
 * interface configuration variable::  
+* read_interface configuration variable::  
+* write_interface configuration variable::  
 * send_arp_command configuration variable::  
 @end menu
 
-@node ip configuration variable, ssh_ip configuration variable, Configuration Reference, Configuration Reference
+@node ip configuration variable, write_ip configuration variable, Configuration Reference, Configuration Reference
 @section ip
 @vindex ip
 
@@ -33,7 +35,7 @@ Applicable to nodes only.  Compulsory - each node must have an @var{ip} variable
 
 Specifies the IP address of each node.  Flipper will use this IP address to connect to MySQL on the node.
 
-@node write_ip configuration variable, read_ip configuration variable, ssh_ip configuration variable, Configuration Reference
+@node write_ip configuration variable, read_ip configuration variable, ip configuration variable, Configuration Reference
 @section write_ip
 @vindex write_ip
 
@@ -65,7 +67,7 @@ Applicable to masterpairs only.  Optional.
 
 This is the broadcast address for the network for the read_ip and write_ip.  Not needed for normal use but may be required for sending ARP messages.
 
-@node path_to_ifconfig configuration variable, ssh_user configuration variable, broadcast configuration variable, Configuration Reference
+@node path_to_ifconfig configuration variable, ssh_ip configuration variable, broadcast configuration variable, Configuration Reference
 @section path_to_ifconfig
 @vindex path_to_ifconfig
 
@@ -73,7 +75,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to @file
 
 If the ifconfig command doesn't exist in @file{/sbin}, for example on FreeBSD where it is in @file{/usr/sbin}, specify this variable to point Flipper to the correct location.
 
-@node ssh_ip configuration variable, write_ip configuration variable, ip configuration variable, Configuration Reference
+@node ssh_ip configuration variable, ssh_user configuration variable, path_to_ifconfig configuration variable, Configuration Reference
 @section ssh_ip
 @vindex ssh_ip
 
@@ -81,7 +83,7 @@ Applicable to nodes only.  Optional.
 
 If ssh is bound to a different IP address than MySQL on a node, define a @var{ssh_ip} variable for that node, and Flipper will use that IP address for ssh rather than the one specified by the @var{ip} variable.
 
-@node ssh_user configuration variable, use_sudo configuration variable, path_to_ifconfig configuration variable, Configuration Reference
+@node ssh_user configuration variable, use_sudo configuration variable, ssh_ip configuration variable, Configuration Reference
 @section ssh_user
 @vindex ssh_user
 
@@ -121,7 +123,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to 3306.
 
 If MySQL on the nodes runs on a non-standard port, use this variable to specify the port number.
 
-@node interface configuration variable, send_arp_command configuration variable, mysql_port configuration variable, Configuration Reference
+@node interface configuration variable, read_interface configuration variable, mysql_port configuration variable, Configuration Reference
 @section interface
 @vindex interface
 
@@ -133,7 +135,7 @@ If no value is configured and there's only a single interface on a node, that si
 
 If no value is configured and multiple interfaces exist on a node, the interface must be specified.
 
-@node read_interface configuration variable
+@node read_interface configuration variable, write_interface configuration variable, interface configuration variable, Configuration Reference
 @section read_interface
 @vindex read_interface
 
@@ -141,7 +143,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to an au
 
 The exact interface to bring up the @code{read_ip} on, for example @code{eth0:98}.
 
-@node write_interface configuration variable
+@node write_interface configuration variable, send_arp_command configuration variable, read_interface configuration variable, Configuration Reference
 @section write_interface
 @vindex write_interface
 
@@ -149,7 +151,7 @@ Specific to node or masterpair, whereever defined.  Optional.  Defaults to an au
 
 The exact interface to bring up the @code{write_ip} on, for example @code{eth0:99}.
 
-@node send_arp_command configuration variable,  , interface configuration variable, Configuration Reference
+@node send_arp_command configuration variable,  , write_interface configuration variable, Configuration Reference
 @section send_arp_command
 @vindex send_arp_command
 
