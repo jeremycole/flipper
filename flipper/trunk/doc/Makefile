@@ -13,7 +13,7 @@ TEXINFO_SOURCES = \
 	flipper-configuration-reference.texi \
 	flipper-credits.texi \
 	flipper-contact.texi \
-	flipper-index.texi \
+	flipper-indexes.texi \
 	$(NULL)
 
 all: html_onefile html_manyfiles pdf

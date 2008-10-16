@@ -86,16 +86,26 @@ First, decide on a name for your first masterpair, and decide on names for the t
 Insert rows into the masterpair and node tables for the IP addresses of the two nodes and the read and write IP addresses that you will be moving between the nodes.  See @ref{ip configuration variable}, @ref{read_ip configuration variable}, @ref{write_ip configuration variable}.
 
 @example
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'read_ip', '<read ip address>');
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'write_ip', '<write ip address>');
-INSERT INTO node (masterpair, node, name, value) VALUES('<masterpair name>', '<first node name>', 'ip', '<first node ip address>');
-INSERT INTO node (masterpair, node, name, value) VALUES('<masterpair name>', '<second node name>', 'ip', '<second node ip address>');
+INSERT INTO masterpair
+  (masterpair, name, value)
+VALUES
+  ('<masterpair name>', 'read_ip', '<read ip>'),
+  ('<masterpair name>', 'write_ip', '<write ip>');
+
+INSERT INTO node 
+	(masterpair, node, name, value)
+VALUES
+  ('<masterpair name>', '<node 1 name>', 'ip', '<node 1 ip>'),
+  ('<masterpair name>', '<node 2 name>', 'ip', '<node 2 ip>');
 @end example
 
 You'll also need to insert a row into the masterpair table for the netmask of the network containing the nodes.  See @ref{netmask configuration variable}.
 
 @example
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'netmask', '<network netmask>');
+INSERT INTO masterpair 
+  (masterpair, name, value)
+VALUES
+  ('<masterpair name>', 'netmask', '<network netmask>');
 @end example
 
 @node ARP sending command, MySQL authentication, IP address information, Quick Start Configuration
@@ -110,7 +120,11 @@ Linux does not send ARP messages out automatically, although it does handle rece
 On RedHat Enterprise Linux, CentOS and Fedora, the @code{arping} command, supplied with the operating system, can be used to send ARP messages.  In order to use @code{arping}, insert a row into the masterpair table.
 
 @example
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'send_arp_command', '/sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip');
+INSERT INTO masterpair
+  (masterpair, name, value)
+VALUES
+  ('<masterpair name>', 'send_arp_command',
+   '/sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip');
 @end example
 
 You may need to insert a row into the masterpair table for the broadcast address of the network containing the nodes if this is required by the command you're using to send ARP messages.
@@ -123,8 +137,11 @@ For more information, see @ref{send_arp_command configuration variable}.
 Flipper needs to be given authentication information so it can connect to the MySQL servers running on the nodes.  By default, it will attempt to connect as @code{root} with no password, on port 3306.  If these defaults are not suitable, insert rows into the masterpair table to tell Flipper how to log into MySQL.  This assumes the same authentication credentials are to be used on each node.  See @ref{mysql_user configuration variable}, @ref{mysql_password configuration variable}, @ref{mysql_port configuration variable}.
 
 @example
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_user', '<mysql username>');
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'mysql_password', '<mysql password>');
+INSERT INTO masterpair
+  (masterpair, name, value)
+VALUES
+  ('<masterpair name>', 'mysql_user', '<mysql username>'),
+  ('<masterpair name>', 'mysql_password', '<mysql password>');
 @end example
 
 @node SSH authentication, Check configuration, MySQL authentication, Quick Start Configuration
@@ -133,7 +150,10 @@ INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'my
 By default, Flipper will ssh to the nodes as the user running the @command{flipper} script.  To change this, either set the @ref{ssh_user configuration variable} configuration variable or alternatively edit @file{~/.ssh/config}.
 
 @example
-INSERT INTO masterpair (masterpair, name, value) VALUES('<masterpair name>', 'ssh_user', '<ssh username>');
+INSERT INTO masterpair
+  (masterpair, name, value)
+VALUES
+  ('<masterpair name>', 'ssh_user', '<ssh username>');
 @end example
 
 By default, Flipper will use sudo for privilege escalation on the nodes, where required.  This is required for non-superusers to execute operations such as bringing down/up IP addresses.  You will need to configure @command{sudo} on the nodes to enable this.  If you set @ref{ssh_user configuration variable} to 'root', you can turn the use of @command{sudo} off if required by setting the @ref{use_sudo configuration variable} to 0.

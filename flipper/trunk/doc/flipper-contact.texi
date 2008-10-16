@@ -1,4 +1,4 @@
-@node Contacting Proven Scaling, Index, Credits, Top
+@node Contacting Proven Scaling, Indexes, Credits, Top
 @chapter Contacting Proven Scaling
 
 If you have any questions, comments, problems, suggestions, you've found a bug or you simply want to let us know that you're using Flipper, we'd be delighted to hear from you.  Please drop us an email at @email{software@@provenscalling.com}.  Let us know what version of MySQL you're using and what platform you're on.

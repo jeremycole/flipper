@@ -54,9 +54,10 @@ Flipper is a tool for managing pairs of MySQL servers replicating in a master-ma
 * Configuration Reference::     
 * Credits::                     
 * Contacting Proven Scaling::   
-* Index::                       
+* Indexes::                     
 
 @iftex
+
 
 @detailmenu
  --- The Detailed Node Listing ---
@@ -189,10 +190,18 @@ Configuration Reference
 * interface configuration variable::  
 * send_arp_command configuration variable::  
 
+Indexes
+
+* Variable Index::              
+* Concept Index::               
+
 @end detailmenu
 @end iftex
 
 @end menu
+
+@c Any file you add or change here, you should also fix in the list
+@c in Makefile so that the dependencies will be correct for "make".
 
 @include flipper-overview.texi
 @include flipper-quickstart.texi
@@ -206,6 +215,6 @@ Configuration Reference
 @include flipper-configuration-reference.texi
 @include flipper-credits.texi
 @include flipper-contact.texi
-@include flipper-index.texi
+@include flipper-indexes.texi
 
 @bye
