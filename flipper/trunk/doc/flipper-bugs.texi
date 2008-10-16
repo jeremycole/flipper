@@ -1,5 +1,6 @@
 @node Bugs, Future Developments, Applications and Flipper, Top
 @chapter Bugs
+@cindex bugs
 
 There are almost definitely plenty of bugs in flipper.  We would be delighted to hear from you if you find a bug - see @xref{Contacting Proven Scaling}.
 
@@ -11,6 +12,8 @@ If you find a bug, please let us know which version of Flipper and perl you're u
 
 @node Known Bugs,  , Bugs, Bugs
 @section Known Bugs
+@cindex bugs, known
+@cindex known bugs
 
 Display of replication delay causes an error when using MySQL 4.0 servers.  The @var{Seconds_Behind_Master} variable is used to determine replication delay, and this is only present in MySQL 4.1.1 and newer.  It is possible to determine the replication delay on MySQL 4.0 from the @var{Time} column in the processlist for the slave SQL thread.
 

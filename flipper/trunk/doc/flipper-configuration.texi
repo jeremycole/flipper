@@ -78,6 +78,7 @@ Any options provided on the command line will override those specified in a @cod
 
 @node Configuration Variables, Masterpair and Node names, Metadata Access, Configuration
 @section Configuration Variables
+@cindex configuration
 
 There are three types of configuration variable in Flipper:
 
@@ -122,6 +123,7 @@ Node names are used internally by Flipper only.  They need not bear any resembla
 
 @node Node IP addresses, Read and Write IP addresses, IP address configuration, IP address configuration
 @subsubsection Node IP addresses
+@vindex ssh_ip
 
 Each node has a base IP address.  This is stored as the @ref{ip configuration variable} at node level.
 
@@ -131,6 +133,8 @@ The MySQL server must be listening on the base IP address of the node.
 
 @node Read and Write IP addresses, Netmask and Broadcast addresses, Node IP addresses, IP address configuration
 @subsubsection Read and Write IP addresses
+@vindex read_ip
+@vindex write_ip
 
 The read and write IP addresses are used by external clients to query the data stored on the masterpair.  Clients performing read operations only should connect to the read IP address.  Clients performing read/write operations should connect to the write IP address.  These are stored as @ref{read_ip configuration variable} and @ref{write_ip configuration variable} at masterpair level.
 
@@ -138,6 +142,8 @@ The read and write IP addresses need not be on the same network (either in a phy
 
 @node Netmask and Broadcast addresses,  , Read and Write IP addresses, IP address configuration
 @subsubsection Netmask and Broadcast addresses
+@vindex netmask
+@vindex broadcast
 
 Flipper also needs to know the netmask, and in some cases the broadcast address, for the network on which the read and write IP addresses reside.  Although the broadcast address is not always required, it's advisable to always configure it.
 
@@ -145,6 +151,7 @@ These are stored as @ref{netmask configuration variable} and @ref{broadcast conf
 
 @node Interface configuration,  , IP address configuration, Network configuration
 @subsection Interface configuration
+@vindex interface
 
 Flipper needs to know which physical network interface it should use for the read and write IP addresses on each node.  If there is only one physical interface configured, then Flipper will use that.  If there are multiple physical interfaces on the machine, then Flipper will need to be told which one to use.
 
@@ -152,6 +159,9 @@ The interface is stored as @ref{interface configuration variable}.  This can be 
 
 @node SSH and sudo configuration, MySQL configuration, Network configuration, Configuration
 @section SSH and sudo configuration
+@vindex ssh_ip
+@vindex ssh_user
+@vindex use_sudo
 
 In order to execute commands on the nodes, Flipper needs to be able to connect to the nodes using ssh.  The following configuration variables are used to control how Flipper connects using ssh to the nodes:
 
@@ -182,6 +192,10 @@ Although @ref{ssh_user configuration variable} and @ref{use_sudo configuration v
 
 @node ssh and sudo security,  , SSH and sudo configuration, SSH and sudo configuration
 @subsection SSH and sudo Security
+@cindex sudo, gaining superuser
+@cindex security, using sudo to restrict superuser access
+@vindex ssh_user
+@vindex use_sudo
 
 You should ensure that you are fully aware of the security implications of how you configure Flipper to work with ssh.  The default settings of @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} may not be appropriate for the security environment in your organisation.
 
@@ -194,6 +208,8 @@ We would recommend that Flipper be configured to connect to nodes as a specified
 
 @node Restricting sudo usage, Restricting ssh access, ssh and sudo security, ssh and sudo security
 @subsubsection Restricting sudo usage
+@cindex sudo, restricting access
+@cindex sudoers, configuration for Flipper
 
 We recommend that you restrict sudo usage to the bare minimum that Flipper requires to operate.  This is particularly important if you are using a role account (eg. an account called @samp{flipper}) for Flipper to use on the nodes.
 
@@ -211,6 +227,8 @@ If you are not using a @ref{send_arp_command configuration variable} in your env
 
 @node Restricting ssh access,  , Restricting sudo usage, ssh and sudo security
 @subsubsection Restricting ssh access
+@cindex ssh, restricting access
+@cindex security, using ssh to give user access
 
 If you use a special account solely for Flipper on the nodes, sometimes called a headless, role or anonymous account, then it is usually desirable to use a restricted shell for that account to stop the role account being used for anonymous actions on the server.
 
@@ -218,6 +236,11 @@ An example restricted shell for use with Flipper can be found in @file{flippersh
 
 @node MySQL configuration,  , SSH and sudo configuration, Configuration
 @section MySQL configuration
+@cindex mysql, configuration
+@cindex mysql, privileges for metadata
+@vindex mysql_user
+@vindex mysql_password
+@vindex mysql_port
 
 Flipper needs to connect to MySQL on the nodes.
 

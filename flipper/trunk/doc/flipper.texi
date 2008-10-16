@@ -11,7 +11,7 @@ Copyright @copyright{} 2007-2008 Proven Scaling LLC and Proven Scaling Ltd.
 @paragraphindent 0
 
 @syncodeindex fn cp
-@synindex pg cp
+@syncodeindex pg cp
 
 @c These are for HTML output only.  We should tune them.
 @set _body_tags bgcolor=white text=#000000 link=#101090 vlink=#7030B0
@@ -54,7 +54,8 @@ Flipper is a tool for managing pairs of MySQL servers replicating in a master-ma
 * Configuration Reference::     
 * Credits::                     
 * Contacting Proven Scaling::   
-* Indexes::                     
+* Variable Index::                     
+* Concept Index::                     
 
 @iftex
 
@@ -190,11 +191,6 @@ Configuration Reference
 * interface configuration variable::  
 * send_arp_command configuration variable::  
 
-Indexes
-
-* Variable Index::              
-* Concept Index::               
-
 @end detailmenu
 @end iftex
 
@@ -215,6 +211,7 @@ Indexes
 @include flipper-configuration-reference.texi
 @include flipper-credits.texi
 @include flipper-contact.texi
-@include flipper-indexes.texi
+@include flipper-index-vr.texi
+@include flipper-index-cp.texi
 
 @bye

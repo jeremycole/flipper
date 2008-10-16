@@ -7,6 +7,8 @@
 
 @node Common MySQL error messages,  , Applications and Flipper, Applications and Flipper
 @section Common MySQL error messages
+@cindex error messages, from mysql
+@cindex mysql error messages, during failover
 
 In a typical Flipper-based multi-master system, there are a few error messages which any client should be able to handle in order to provide a "seamless" experience for users, despite failover occurring.  During any failover using Flipper (and indeed other systems based on a similar model) the following errors must be handled:
 

@@ -1,5 +1,6 @@
 @node Installation, Configuration, Quick Start, Top
 @chapter Installation
+@cindex installation
 
 @menu
 * Obtaining Flipper::           
@@ -16,11 +17,15 @@
 
 @node Packages, Source Code, Obtaining Flipper, Obtaining Flipper
 @subsection Packages
+@cindex installation, using binary packages
+@cindex rpm, packages of Flipper
 
 Pre-built packages for flipper can be downloaded from @uref{http://mirror.provenscaling.com/extras/provenscaling/}.  If a package is not available for your operating environment, then don't fear - it's very easy to download the source code and install it.
 
 @node Source Code,  , Packages, Obtaining Flipper
 @subsection Source Code
+@cindex installation, from Subversion
+@cindex svn, source repository for Flipper
 
 To fetch the most recent stable version of Flipper from Subversion, simply run the following command in a shell:
 
@@ -77,6 +82,7 @@ You can either copy the @file{flipper} script to somewhere in your @env{PATH} an
 
 @node Copying the script to your PATH, Installing into your home directory or other arbitary location, Copying files, Copying files
 @subsubsection Copying the script to your PATH
+@cindex installation, manually copying files
 
 You will almost definitely need super-user privileges to do this.
 
@@ -88,6 +94,7 @@ Copy the @file{lib/Flipper} directory from subversion to some place in perl's @c
 
 @node Installing into your home directory or other arbitary location,  , Copying the script to your PATH, Copying files
 @subsubsection Installing into your home directory or other arbitary location
+@cindex installation, into home directory
 
 The @file{flipper} script can run anywhere, so you can copy it to your home directory or other arbitary location.  This can be useful if you want to install Flipper on a node on which you don't have super-user privileges.
 
