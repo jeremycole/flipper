@@ -54,9 +54,9 @@ Flipper is a tool for managing pairs of MySQL servers replicating in a master-ma
 * Configuration Reference::     
 * Credits::                     
 * Contacting Proven Scaling::   
-* Index::                       @iftex
+* Index::                       
 
-
+@iftex
 
 @detailmenu
  --- The Detailed Node Listing ---
@@ -190,6 +190,8 @@ Configuration Reference
 * send_arp_command configuration variable::  
 
 @end detailmenu
+@end iftex
+
 @end menu
 
 @include flipper-overview.texi
