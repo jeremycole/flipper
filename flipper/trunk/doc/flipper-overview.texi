@@ -1,4 +1,4 @@
-@node Overview, Installation, Top, Top
+@node Overview, Quick Start, Top, Top
 @chapter Overview
 
 Flipper is a tool for managing read and write access pairs of MySQL nodes (servers) arranged in a master-master replication formation.

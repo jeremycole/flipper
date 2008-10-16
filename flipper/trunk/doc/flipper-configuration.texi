@@ -1,4 +1,4 @@
-@node Configuration, Usage, Quick Start, Top
+@node Configuration, Usage, Installation, Top
 @chapter Configuration
 
 @menu

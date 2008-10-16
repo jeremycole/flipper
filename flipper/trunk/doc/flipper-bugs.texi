@@ -1,4 +1,4 @@
-@node Bugs, Future Developments, Usage, Top
+@node Bugs, Future Developments, Applications and Flipper, Top
 @chapter Bugs
 
 There are almost definitely plenty of bugs in flipper.  We would be delighted to hear from you if you find a bug - see @xref{Contacting Proven Scaling}.

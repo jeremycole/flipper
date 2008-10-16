@@ -1,4 +1,4 @@
-@node Installation, Quick Start, Overview, Top
+@node Installation, Configuration, Quick Start, Top
 @chapter Installation
 
 @menu

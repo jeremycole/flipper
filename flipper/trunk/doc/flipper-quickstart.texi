@@ -1,4 +1,4 @@
-@node Quick Start, Configuration, Installation, Top
+@node Quick Start, Installation, Overview, Top
 @chapter Quick Start
 
 Follow the instructions here to get started with Flipper in just a few minutes.

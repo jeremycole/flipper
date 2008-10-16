@@ -1,4 +1,4 @@
-@node Usage, Bugs, Configuration, Top
+@node Usage, Applications and Flipper, Configuration, Top
 @chapter Usage
 
 Typically, the read IP will be up on one node, and the write IP will be up on the other node.  There's nothing to stop you having both read and write IPs up on the same node though.  This can be very useful in certain situations, for example if you've got unbalanced hardware (one node significantly more powerful or loaded than the other) or as a short term measure if there are connectivity issues or maintenance is being carried out.

@@ -43,21 +43,41 @@ Flipper is a tool for managing pairs of MySQL servers replicating in a master-ma
 
 @menu
 * Overview::                    
-* Installation::                
 * Quick Start::                 
+* Installation::                
 * Configuration::               
 * Usage::                       
+* Applications and Flipper::    
 * Bugs::                        
 * Future Developments::         
 * Platform Notes::              
 * Configuration Reference::     
 * Credits::                     
 * Contacting Proven Scaling::   
-* Index::
+* Index::                       @iftex
 
-@iftex
+
+
 @detailmenu
  --- The Detailed Node Listing ---
+
+Quick Start
+
+* Before you begin::            
+* Quick Start Installation::    
+* Metadata::                    
+* Pointing Flipper at the Metadata::  
+* Quick Start Configuration::   
+* Set up IP addresses::         
+* Using Flipper::               
+
+Configuration
+
+* IP address information::      
+* ARP sending command::         
+* MySQL authentication::        
+* SSH authentication::          
+* Check configuration::         
 
 Installation
 
@@ -78,24 +98,6 @@ Copying files
 
 * Copying the script to your PATH::  
 * Installing into your home directory or other arbitary location::  
-
-Quick Start
-
-* Before you begin::            
-* Quick Start Installation::    
-* Metadata::                    
-* Pointing Flipper at the Metadata::  
-* Quick Start Configuration::   
-* Set up IP addresses::         
-* Using Flipper::               
-
-Configuration
-
-* IP address information::      
-* ARP sending command::         
-* MySQL authentication::        
-* SSH authentication::          
-* Check configuration::         
 
 Configuration
 
@@ -151,6 +153,10 @@ Commands
 * Moving IPs away from a node - the disable command::  
 * Handling a failed node - the fail command::  
 
+Applications and Flipper
+
+* Common MySQL error messages::  
+
 Bugs
 
 * Known Bugs::                  
@@ -184,14 +190,14 @@ Configuration Reference
 * send_arp_command configuration variable::  
 
 @end detailmenu
-@end iftex
 @end menu
 
 @include flipper-overview.texi
-@include flipper-installation.texi
 @include flipper-quickstart.texi
+@include flipper-installation.texi
 @include flipper-configuration.texi
 @include flipper-usage.texi
+@include flipper-applications.texi
 @include flipper-bugs.texi
 @include flipper-future.texi
 @include flipper-platform.texi
