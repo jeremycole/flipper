@@ -1,4 +1,4 @@
 @node Variable Index
-@appendix Variable Index
+@unnumbered Variable Index
 
 @printindex vr
