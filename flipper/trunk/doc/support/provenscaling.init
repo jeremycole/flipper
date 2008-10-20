@@ -10,10 +10,10 @@
 #     every single page.
 #
 
-$print_page_head              = \&flipper_print_page_head;
-$print_page_foot              = \&flipper_print_page_foot;
+$print_page_head              = \&provenscaling_print_page_head;
+$print_page_foot              = \&provenscaling_print_page_foot;
 
-sub flipper_print_page_head($)
+sub provenscaling_print_page_head($)
 {
     my $fh = shift;
     my $longtitle = "$Texi2HTML::THISDOC{'title_unformatted'}";
@@ -34,7 +34,7 @@ $AFTER_BODY_OPEN
 EOT
 }
 
-sub flipper_print_page_foot($)
+sub provenscaling_print_page_foot($)
 {
     my $fh = shift;
     print $fh <<EOT;

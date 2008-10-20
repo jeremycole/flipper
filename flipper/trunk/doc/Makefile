@@ -45,5 +45,5 @@ flipper.html: $(TEXINFO_SOURCES)
 html_manyfiles: html_manyfiles.recent
 html_manyfiles.recent: $(TEXINFO_SOURCES)
 	mkdir -p html
-	texi2html --init-file=support/flipper.init --split node --node-files --subdir=html --top-file=index.html flipper.texi
+	texi2html --init-file=support/provenscaling.init --split node --node-files --subdir=html --top-file=index.html flipper.texi
 	touch html_manyfiles.recent
