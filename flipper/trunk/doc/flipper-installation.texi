@@ -48,7 +48,7 @@ If you want to check Flipper out to a different directory, specify something oth
 
 The flipper script assumes @file{perl} will be in @file{/usr/bin}.  If your Perl executable is located somewhere else, either change the @code{#!} line in the @file{flipper} script, or better still put a symlink in place in @file{/usr/bin/perl} to your @file{perl} binary, as there are plenty of other scripts out there which rely on @file{perl} being in @file{/usr/bin}.
 
-@node Copying files,  , Where's perl?, Installing Flipper from svn
+@node Copying files,  , Where's Perl?, Installing Flipper from svn
 @subsection Copying files
 
 You can either copy the @file{flipper} script to somewhere in your @env{PATH} and the Perl modules into @@INC, or simply run the @file{flipper} script from any directory (usually your home directory), invoke it as @command{./flipper} and copy the Perl modules into the same directory.
