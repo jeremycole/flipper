@@ -20,7 +20,7 @@
 @cindex installation, using binary packages
 @cindex rpm, packages of Flipper
 
-Pre-built packages for flipper can be downloaded from @uref{http://mirror.provenscaling.com/extras/provenscaling/}.  If a package is not available for your operating environment, then don't fear - it's very easy to download the source code and install it.
+Pre-built packages for flipper can be downloaded from the @uref{http://mirror.provenscaling.com/extras/provenscaling/, Proven Scaling Mirror}.  If a package is not available for your operating environment, then don't fear - it's very easy to download the source code and install it.
 
 @node Source Code,  , Packages, Obtaining Flipper
 @subsection Source Code
@@ -30,29 +30,7 @@ Pre-built packages for flipper can be downloaded from @uref{http://mirror.proven
 To fetch the most recent stable version of Flipper from Subversion, simply run the following command in a shell:
 
 @example
-$ @b{svn checkout svn://svn.provenscaling.com/public/flipper/trunk/ flipper}
-A    flipper/sql
-A    flipper/sql/metadata.sql
-A    flipper/flipper
-A    flipper/doc
-A    flipper/doc/flipper-future.texi
-A    flipper/doc/flipper-quickstart.texi
-A    flipper/doc/flipper-bugs.texi
-A    flipper/doc/flipper-installation.texi
-A    flipper/doc/flipper.texi
-A    flipper/doc/flipper-configuration-reference.texi
-A    flipper/doc/flipper-platform.texi
-A    flipper/doc/flipper-usage.texi
-A    flipper/doc/flipper-overview.texi
-A    flipper/doc/flipper-configuration.texi
-A    flipper/lib
-A    flipper/lib/Flipper
-A    flipper/lib/Flipper/Metadata
-A    flipper/lib/Flipper/Metadata/Dummy.pm
-A    flipper/lib/Flipper/Metadata/DBI.pm
-A    flipper/lib/Flipper/Metadata.pm
-Checked out revision 94.
-$
+svn checkout svn://svn.provenscaling.com/public/flipper/trunk/ flipper
 @end example
 
 If you want to check Flipper out to a different directory, specify something other than @samp{flipper} as the second parameter to @command{svn checkout}.
@@ -90,7 +68,7 @@ The @file{flipper} script can be copied to @file{/usr/bin}, @file{/usr/local/bin
 
 Copy the @file{lib/Flipper} directory from subversion to some place in perl's @code{@@INC} on your system.  To list the directories in @code{@@INC} on your system, run @command{perl -e 'print join "\n",@@INC'}.
 
-@file{/usr/lib/perl5/site_perl}, @file{/usr/local/lib/perl5/site_perl} on Linux/Solaris/BSD and @file{/Library/Perl} on Mac OS X are good places to put the @file{Flipper} directory.
+@file{/usr/lib/perl5/site_perl}, @file{/usr/local/lib/perl5/site_perl} on Linux, Solaris, and BSD, and @file{/Library/Perl} on Mac OS X are good places to put the @file{Flipper} directory.
 
 @node Installing into your home directory or other arbitary location,  , Copying the script to your PATH, Copying files
 @subsubsection Installing into your home directory or other arbitary location

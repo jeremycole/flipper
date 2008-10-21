@@ -101,28 +101,54 @@ Nothing will happen if the specified IP is already up on the given node and an i
 
 The following example demonstrates the use of the @command{set} command:
 
+First, display status of customerdata masterpair:
+
 @example
-$ @b{flipper customerdata status} # @r{Display status of customerdata masterpair.}
+$ @b{flipper customerdata status}
 MASTERPAIR: customerdata
 NODE: dell_2850 has read IP, is writable, replication running, 0s delay
 NODE: hp_dl380 is writable, replication running, 0s delay
 WARNING: MySQL server on read IP is writable
 WARNING: No node has the write IP
-$ @b{flipper customerdata set write dell_2850} # @r{Put the write IP on dell_2850.}
+@end example
+
+Put the write IP on dell_2850:
+
+@example
+$ @b{flipper customerdata set write dell_2850}
 WARNING: write IP is not up on hp_dl380 node.
 WARNING: Won't attempt to take down write IP on hp_dl380 node.
-$ @b{flipper customerdata status} # @r{Display status again.  dell_2850 now has the write IP.}
+@end example
+
+Display status again, noticing that dell_2850 now has the write IP:
+
+@example
+$ @b{flipper customerdata status} 
 MASTERPAIR: customerdata
 NODE: dell_2850 has read IP, has write IP, is writable, replication running, 0s delay
 NODE: hp_dl380 is read-only, replication running, 0s delay
-$ @b{flipper customerdata set read hp_dl380} # @r{Put the read IP onto hp_dl380}
-$ @b{flipper customerdata status} # @r{Display status again.  The read IP has moved to hp_dl380.}
+@end example
+
+Put the read IP onto hp_dl380:
+
+@example
+$ @b{flipper customerdata set read hp_dl380}
+@end example
+
+Display status again, noticing that the read IP has moved to hp_dl380:
+
+@example
+$ @b{flipper customerdata status}
 MASTERPAIR: customerdata
 NODE: dell_2850 has write IP, is writable, replication running, 0s delay
 NODE: hp_dl380 has read IP, is read-only, replication running, 0s delay
-$ @b{flipper customerdata set write dell_2850} # @r{Put write IP on dell_2850.  No-op as it's already there.}
+@end example
+
+Finally, put write IP on dell_2850.  This has no effect, as it's already there:
+
+@example
+$ @b{flipper customerdata set write dell_2850}
 INFO:  The write IP is already up on the dell_2850 node.
-$
 @end example
 
 @node Swapping IPs from one node to the other - the swap command, Moving IPs away from a node - the disable command, Moving an IP to a node - the set command, Commands
@@ -134,22 +160,43 @@ The @command{swap} command moves a single IP, or all IPs to the other node to th
 
 The following example demonstrates the use of the @command{swap} command:
 
+First, display status of masterpair:
+
 @example
-$ @b{flipper customerdata status} # @r{Display status of masterpair.}
+$ @b{flipper customerdata status}
 MASTERPAIR: customerdata
 NODE: dell_2850 has read IP, has write IP, is writable, replication running, 0s delay
 NODE: hp_dl380 is read-only, replication running, 0s delay
-$ @b{flipper customerdata swap read} # @r{Move the read IP to the other node.}
-$ @b{flipper customerdata status} # @r{Display status again.  Read IP has moved to the other node.}
+@end example
+
+Move the read IP to the other node:
+
+@example
+$ @b{flipper customerdata swap read}
+@end example
+
+Display status again, noticing that the read IP has moved to the other node:
+
+@example
+$ @b{flipper customerdata status}
 MASTERPAIR: customerdata
 NODE: dell_2850 has write IP, is writable, replication running, 0s delay
 NODE: hp_dl380 has read IP, is read-only, replication running, 0s delay
-$ @b{flipper customerdata swap} # @r{Move all IPs to the other node.}
-$ @b{flipper customerdata status} # @r{Display status again.  The IPs have moved to the other node.}
+@end example
+
+Move all IPs to the other node:
+
+@example
+$ @b{flipper customerdata swap}
+@end example
+
+Display status again, noticing that the IPs have moved to the other node:
+
+@example
+$ @b{flipper customerdata status}
 MASTERPAIR: customerdata
 NODE: dell_2850 has read IP, is read-only, replication running, 0s delay
 NODE: hp_dl380 has write IP, is writable, replication running, 0s delay
-$ 
 @end example
 
 @node Moving IPs away from a node - the disable command, Handling a failed node - the fail command, Swapping IPs from one node to the other - the swap command, Commands
@@ -161,24 +208,50 @@ If you wish to remove all IPs from a node, perhaps to undertake some maintenance
 
 The following example demonstrates the use of the @command{disable} command:
 
+First, display status:
+
 @example
-$ @b{flipper mike status} # @r{Display status.}
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node has read IP, is read-only, replication running, 0s delay
 NODE: second_node has write IP, is writable, replication running, 0s delay
-$ @b{flipper mike disable first_node} # @r{Disable dell_2850, ergo move read IP to hp_dl380}
-$ @b{flipper mike status} # @r{Show status.  Read IP has moved to hp_dl380}
+@end example
+
+Disable dell_2850, that is, move read IP to hp_dl380:
+
+@example
+$ @b{flipper mike disable first_node}
+@end example
+
+Show status, noticing that the read IP has moved to hp_dl380:
+
+@example
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node is read-only, replication running, 0s delay
 NODE: second_node has read IP, has write IP, is writable, replication running, 0s delay
-$ @b{flipper mike disable second_node} # @r{Disable hp_dl380, ergo move all IPs to dell_2850}
-$ @b{flipper mike status} # @r{Show status again.  All IPs now moved to dell_2850}
+@end example
+
+Disable hp_dl380, that is, move all IPs to dell_2850:
+
+@example
+$ @b{flipper mike disable second_node}
+@end example
+
+Show status again, noticing that all IPs have now moved to dell_2850:
+
+@example
+$ @b{flipper mike status}
 MASTERPAIR: mike
 NODE: first_node has read IP, has write IP, is writable, replication running, 0s delay
 NODE: second_node is read-only, replication running, 0s delay
-$ @b{flipper mike disable second_node} # @r{No IPs on the second node, so do nothing}
+@end example
+
+There are no IPs on the second node, so disable will do nothing:
+
+@example
+$ @b{flipper mike disable second_node}
 INFO:  No IPs on the second_node node.
-$
 @end example
 
 @node Handling a failed node - the fail command,  , Moving IPs away from a node - the disable command, Commands
