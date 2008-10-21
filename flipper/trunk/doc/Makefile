@@ -31,10 +31,12 @@ PHONY_TARGETS=\
 	clean \
 	reallyclean \
 	publish \
+	images \
 	pdf_images \
 	png_images \
 	html_images \
 	pdf \
+	html \
 	html_onefile \
 	html_manyfiles \
 	$(NULL)
@@ -58,6 +60,8 @@ reallyclean: clean
 
 publish: all
 	publish-docs flipper
+
+images: png_images pdf_images
 
 png_images: png_images.recent
 png_images.recent: $(GRAFFLE_SOURCES) $(GRAFFLE_SOURCES:%.graffle=%.png)
