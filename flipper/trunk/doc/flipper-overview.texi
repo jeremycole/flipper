@@ -8,5 +8,4 @@ A basic Flipper system looks like the following:
 
 @image{illustrations/architecture,,,Architecture of a Flipper system}
 
-
-Flipper is written in perl, and has been written to be as portable as possible.  It does not require any perl modules outside of the core.  It has been tested with MySQL 5.0, but should work with MySQL versions 4.0 and later.
+Flipper is written in Perl, and has been written to be as portable as possible.  It does not require any Perl modules outside of the core.  It has been tested with MySQL 5.0, but should work with MySQL versions 4.0 and later.

@@ -4,7 +4,7 @@
 
 There are almost definitely plenty of bugs in flipper.  We would be delighted to hear from you if you find a bug - see @xref{Contacting Proven Scaling}.
 
-If you find a bug, please let us know which version of Flipper and perl you're using (give us the output of @command{flipper --version}), let us know the platform(s) you're using (operating system, version, distribution, hardware) and also send us the output that Flipper produces when reproducing the bug when invoked with the @option{--verbose} and @option{--debug} switches (or @option{-vd} for short).
+If you find a bug, please let us know which version of Flipper and Perl you're using (give us the output of @command{flipper --version}), let us know the platform(s) you're using (operating system, version, distribution, hardware) and also send us the output that Flipper produces when reproducing the bug when invoked with the @option{--verbose} and @option{--debug} switches (or @option{-vd} for short).
 
 @menu
 * Known Bugs::                  
