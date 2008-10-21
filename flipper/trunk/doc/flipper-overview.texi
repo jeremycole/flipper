@@ -2,12 +2,11 @@
 @chapter Overview
 @cindex overview, concepts
 
-Flipper is a tool for managing read and write access pairs of MySQL nodes (servers) arranged in a master-master replication formation.
+Flipper is a tool for managing read and write access pairs of MySQL nodes (servers) arranged in a master-master replication formation.  A pair of nodes arranged like this is known as a masterpair.  Read and write access to the masterpair is done through a pair of IP addresses - one for read, one for write - which can be moved between the two nodes.  Flipper allows you to move these IP addresses between the nodes in a controlled manner.
+ 
+A basic Flipper system looks like the following:
 
-@image{illustrations/architecture}
+@image{illustrations/architecture,,,Architecture of a Flipper system}
 
-A pair of nodes arranged like this is known as a masterpair.  
-
-Read and write access to the masterpair is done through a pair of IP addresses - one for read, one for write - which can be moved between the two nodes.  Flipper allows you to move these IP addresses between the nodes in a controlled manner.
 
 Flipper is written in perl, and has been written to be as portable as possible.  It does not require any perl modules outside of the core.  It has been tested with MySQL 5.0, but should work with MySQL versions 4.0 and later.
