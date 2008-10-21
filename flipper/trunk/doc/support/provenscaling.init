@@ -12,6 +12,7 @@
 
 $print_page_head              = \&provenscaling_print_page_head;
 $print_page_foot              = \&provenscaling_print_page_foot;
+$image                        = \&provenscaling_image;
 
 sub provenscaling_print_page_head($)
 {
@@ -44,3 +45,36 @@ sub provenscaling_print_page_foot($)
 EOT
 }
 
+sub provenscaling_image($$$$$$$$$$$)
+{
+    my $file = shift;
+    my $base = shift;
+    my $preformatted = shift;
+    my $file_name = shift;
+    my $alt = shift;
+    my $width = shift;
+    my $height = shift;
+    my $raw_alt = shift;
+    my $extension = shift;
+    my $working_dir = shift;
+    my $file_path = shift;
+    $alt = &$protect_text($base) if (!defined($alt) or ($alt eq ''));
+ 
+    return "[ $alt ]" if ($preformatted);
+
+    if (!defined($file_path) or $file_path eq '')
+    {
+        if (defined($extension) and $extension ne '')
+        {
+            $file = "$base.$extension";
+        }
+        else
+        {
+            $file = "$base.jpg";
+        }
+        main::echo_warn ("no image file for $base, (using $file)");
+    } 
+
+    my $img_src = "images/" . &$protect_text($file_name);
+    return "<img src=\"$img_src\" alt=\"$alt\">";
+}

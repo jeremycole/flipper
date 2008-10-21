@@ -26,21 +26,48 @@ GRAFFLE_SOURCES=\
 	#illustrations/commands/swap-set-fail-disable.graffle \
 	$(NULL)
 
-all: images html_onefile html_manyfiles pdf 
+PHONY_TARGETS=\
+	all \
+	clean \
+	reallyclean \
+	publish \
+	pdf_images \
+	png_images \
+	html_images \
+	pdf \
+	html_onefile \
+	html_manyfiles \
+	$(NULL)
+
+.PHONY: $(PHONY_TARGETS) 
+
+all: pdf html
 
 clean:
-	rm -rf html html_manyfiles.recent *.html *.pdf *~
+	rm -rf html *.recent *.html *.pdf *~
+
+reallyclean: clean
 	rm -rf $(GRAFFLE_SOURCES:%.graffle=%.png)
+	rm -rf $(GRAFFLE_SOURCES:%.graffle=%.pdf)
 
 %.png: %.graffle
-	osascript support/graffle-to-png.applescript `pwd`/$< `pwd`/$@
+	osascript support/graffle-export.applescript "PNG" `pwd`/$< `pwd`/$@
 
-images: $(GRAFFLE_SOURCES:%.graffle=%.png)
+%.pdf: %.graffle
+	osascript support/graffle-export.applescript "Apple PDF pasteboard type" `pwd`/$< `pwd`/$@
 
 publish: all
 	publish-docs flipper
 
-pdf: images flipper.pdf
+png_images: png_images.recent
+png_images.recent: $(GRAFFLE_SOURCES) $(GRAFFLE_SOURCES:%.graffle=%.png)
+	touch $@
+
+pdf_images: pdf_images.recent
+pdf_images.recent: $(GRAFFLE_SOURCES) $(GRAFFLE_SOURCES:%.graffle=%.pdf)
+	touch $@
+
+pdf: pdf_images flipper.pdf
 flipper.pdf: $(TEXINFO_SOURCES)
 	#sed -e 's|@image{[^}]*} *||g' <$< >flipper-tmp.texi
 	cp flipper.texi flipper-tmp.texi
@@ -53,12 +80,21 @@ flipper.pdf: $(TEXINFO_SOURCES)
 	rm -f flipper-tmp.*
 	touch $@
 
-html_onefile: images flipper.html
-flipper.html: $(TEXINFO_SOURCES)
-	texi2html flipper.texi
+html: html_onefile html_manyfiles
 
-html_manyfiles: images html_manyfiles.recent
+html_images: html_images.recent
+html_images.recent: png_images.recent
+	mkdir -p html/images/
+	rsync -avW --exclude "*.pdf" --exclude "*.graffle" --exclude ".svn" --exclude ".DS_Store" illustrations html/images/
+	touch html_images.recent
+
+html_onefile: html_images.recent html_onefile.recent
+html_onefile.recent: $(TEXINFO_SOURCES)
+	support/texi2html --init-file=support/provenscaling.init --output html/flipper_onefile.html flipper.texi
+	touch html_onefile.recent
+
+html_manyfiles: html_images.recent html_manyfiles.recent
 html_manyfiles.recent: $(TEXINFO_SOURCES)
 	mkdir -p html
-	texi2html --init-file=support/provenscaling.init --split node --node-files --subdir=html --top-file=index.html flipper.texi
+	support/texi2html --init-file=support/provenscaling.init --split node --node-files --subdir=html --top-file=index.html flipper.texi
 	touch html_manyfiles.recent
