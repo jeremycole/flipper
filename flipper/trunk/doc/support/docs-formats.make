@@ -33,7 +33,7 @@ reallyclean: clean
 	osascript support/graffle-export.applescript "Apple PDF pasteboard type" `pwd`/$< `pwd`/$@
 
 publish: all
-	publish-docs flipper
+	publish-docs $(PROJECT)
 
 images: png_images pdf_images
 
