@@ -72,9 +72,6 @@ Flipper is a tool for managing pairs of MySQL servers replicating in a master-ma
 @include flipper-platform.texi
 @include flipper-configuration-reference.texi
 @include flipper-credits.texi
-@include support/common/license-lgpl-v3.texi
-@include support/common/contact.texi
-@include support/common/index-vr.texi
-@include support/common/index-cp.texi
+@include support/common/backmatter.texi
 
 @bye
