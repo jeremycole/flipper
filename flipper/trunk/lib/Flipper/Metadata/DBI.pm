@@ -15,7 +15,7 @@ sub _after_new
     $rh_params->{username},
     $rh_params->{password},
     { PrintError => 0, RaiseError => 0 }
-  ) || die <<"CONNECT_FAIL";
+  ) || die <<CONNECT_FAIL;
 Couldn't connect using username '$rh_params->{username}' to DSN:
 $rh_params->{dsn}
 
@@ -39,7 +39,7 @@ sub get_masterpair_info
     if (!defined $self->{_cache}->{$masterpair}->{masterpair_info})
     {
       my $rah_masterpair_info = $self->{DBH}->selectall_arrayref(
-        'SELECT name, value FROM masterpair WHERE masterpair=?',
+        'SELECT name, value FROM masterpair WHERE masterpair=? ORDER BY name',
         { Slice => {} },
         $masterpair
       );
@@ -66,7 +66,7 @@ sub get_node_info
     if (!defined $self->{_cache}->{$masterpair}->{nodes_info}->{$node})
     {
       my $rah_node_info = $self->{DBH}->selectall_arrayref(
-        'SELECT name,value FROM node WHERE masterpair=? AND node=?',
+        'SELECT name, value FROM node WHERE masterpair=? AND node=? ORDER BY name',
         { Slice => {} },
         $masterpair,
         $node,
@@ -93,7 +93,7 @@ sub get_node_names
     if (!defined $self->{_cache}->{$masterpair}->{node_names})
     {
       my $rah_nodes = $self->{DBH}->selectall_arrayref(
-        'SELECT DISTINCT(node) FROM node WHERE masterpair=?',
+        'SELECT DISTINCT node FROM node WHERE masterpair=? ORDER BY node',
         { Slice => {} },
         $masterpair,
       );
@@ -114,7 +114,7 @@ sub get_masterpair_names
   my $self = shift;
   if (!defined $self->{_cache}->{_masterpairs}) {
     my $rah_masterpairs = $self->{DBH}->selectall_arrayref(
-      'SELECT DISTINCT(masterpair) FROM masterpair',
+      'SELECT DISTINCT masterpair FROM masterpair ORDER BY masterpair',
       { Slice => {} },
     );
     if (defined $rah_masterpairs && @$rah_masterpairs)
