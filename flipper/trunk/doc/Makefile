@@ -27,4 +27,4 @@ GRAFFLE_SOURCES=\
 	#illustrations/commands/swap-set-fail-disable.graffle \
 	$(NULL)
 
-include support/docs-formats.make
+include support/docs.make
