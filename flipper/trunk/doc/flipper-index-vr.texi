@@ -1,4 +1,0 @@
-@node Variable Index, Concept Index, Contacting Proven Scaling, Top
-@unnumbered Variable Index
-
-@printindex vr

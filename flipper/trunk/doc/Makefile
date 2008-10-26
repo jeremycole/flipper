@@ -12,9 +12,6 @@ TEXINFO_SOURCES = \
 	flipper-platform.texi \
 	flipper-configuration-reference.texi \
 	flipper-credits.texi \
-	flipper-contact.texi \
-	flipper-index-vr.texi \
-	flipper-index-cp.texi \
 	$(NULL)
 
 IMAGE_DIRS=\

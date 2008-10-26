@@ -35,7 +35,7 @@ The most convenient way to send out ARP announcements differs from distribution 
 
 The @command{/sbin/arping} command (supplied as standard with the distribution) can be used to send the ARP announcements.  The best value for @ref{send_arp_command configuration variable} is @code{/sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip} - supply the absolute pathname because @file{/sbin} isn't normally in the default path.
 
-@node Debian,  , RHEL/CentOS, Linux
+@node Debian, , RHEL/CentOS, Linux
 @subsection Debian
 @cindex platforms, linux, debian
 @cindex linux, debian
@@ -50,7 +50,7 @@ The @command{arping} command as supplied by default with RHEL/CentOS can be obta
 
 Flipper's network interface and IP alias handling code does not work on HP-UX.  Therefore, it is not possible to use Flipper to manage nodes running HP-UX.  It is however possible to run the @command{flipper} script on a node running HP-UX to manage a masterpair where the nodes run Linux, FreeBSD or another supported operating system.
 
-@node Unsupported Platforms,  , HP-UX, Platform Notes
+@node Unsupported Platforms, , HP-UX, Platform Notes
 @section Unsupported Platforms
 @cindex platforms, unsupported
 @cindex Windows

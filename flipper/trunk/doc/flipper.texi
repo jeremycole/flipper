@@ -53,11 +53,11 @@ Flipper is a tool for managing pairs of MySQL servers replicating in a master-ma
 * Platform Notes::              
 * Configuration Reference::     
 * Credits::                     
+* License (LGPLv3)::            
 * Contacting Proven Scaling::   
 * Variable Index::              
 * Concept Index::               
 @end menu
-
 @c Any file you add or change here, you should also fix in the list
 @c in Makefile so that the dependencies will be correct for "make".
 
@@ -72,8 +72,9 @@ Flipper is a tool for managing pairs of MySQL servers replicating in a master-ma
 @include flipper-platform.texi
 @include flipper-configuration-reference.texi
 @include flipper-credits.texi
-@include flipper-contact.texi
-@include flipper-index-vr.texi
-@include flipper-index-cp.texi
+@include support/common/license-lgpl-v3.texi
+@include support/common/contact.texi
+@include support/common/index-vr.texi
+@include support/common/index-cp.texi
 
 @bye

@@ -2,10 +2,10 @@
 @chapter Applications and Flipper
 
 @menu
-* Common MySQL error messages::  
+* Common MySQL error messages:: 
 @end menu
 
-@node Common MySQL error messages,  , Applications and Flipper, Applications and Flipper
+@node Common MySQL error messages, , Applications and Flipper, Applications and Flipper
 @section Common MySQL error messages
 @cindex error messages, from mysql
 @cindex mysql error messages, during failover

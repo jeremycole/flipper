@@ -24,7 +24,7 @@ Currently only access to metadata stored in a database using Perl's DBI is imple
 * DBI metadata storage::        
 @end menu
 
-@node DBI metadata storage,  , Metadata Storage, Metadata Storage
+@node DBI metadata storage, , Metadata Storage, Metadata Storage
 @subsection DBI metadata storage
 
 Any DBMS that's supported by DBI can be used to store Flipper's metadata.  Currently only MySQL has been tested, but if you have success or failure using another DBMS, please let us know.
@@ -41,7 +41,7 @@ The metadata database contains two tables - one for information relating to mast
 @menu
 * Data Source Naming Scheme::   
 * Authentication::              
-* Pointing Flipper at Metadata::  
+* Pointing Flipper at Metadata::
 @end menu
 
 @node Data Source Naming Scheme, Authentication, Metadata Access, Metadata Access
@@ -58,7 +58,7 @@ Other metadata storage methods can be chosen by specifying something other than 
 
 As well as the DSN, Flipper can use a username and password if the metadata storage method requires authentication to be used.
 
-@node Pointing Flipper at Metadata,  , Authentication, Metadata Access
+@node Pointing Flipper at Metadata, , Authentication, Metadata Access
 @subsection Pointing Flipper at Metadata
 
 The three items of information (metadata DSN, username and password) can be passed to flipper on the command line.
@@ -117,8 +117,8 @@ Node names are used internally by Flipper only.  They need not bear any resembla
 
 @menu
 * Node IP addresses::           
-* Read and Write IP addresses::  
-* Netmask and Broadcast addresses::  
+* Read and Write IP addresses:: 
+* Netmask and Broadcast addresses::
 @end menu
 
 @node Node IP addresses, Read and Write IP addresses, IP address configuration, IP address configuration
@@ -140,7 +140,7 @@ The read and write IP addresses are used by external clients to query the data s
 
 The read and write IP addresses need not be on the same network (either in a physical or logical sense) as the base address of the nodes.  They do however need to be on the same network as each other.
 
-@node Netmask and Broadcast addresses,  , Read and Write IP addresses, IP address configuration
+@node Netmask and Broadcast addresses, , Read and Write IP addresses, IP address configuration
 @subsubsection Netmask and Broadcast addresses
 @vindex netmask
 @vindex broadcast
@@ -149,7 +149,7 @@ Flipper also needs to know the netmask, and in some cases the broadcast address,
 
 These are stored as @ref{netmask configuration variable} and @ref{broadcast configuration variable} at masterpair level.
 
-@node Interface configuration,  , IP address configuration, Network configuration
+@node Interface configuration, , IP address configuration, Network configuration
 @subsection Interface configuration
 @vindex interface
 
@@ -187,10 +187,10 @@ If you have set @ref{ssh_user configuration variable} to @samp{root}, then you c
 Although @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} can both be specified at node level, we recommend that they are only specified at masterpair level and nodes within a masterpair are identically configured.
 
 @menu
-* ssh and sudo security::       
+* ssh and sudo security::       SSH and sudo Security
 @end menu
 
-@node ssh and sudo security,  , SSH and sudo configuration, SSH and sudo configuration
+@node ssh and sudo security, , SSH and sudo configuration, SSH and sudo configuration
 @subsection SSH and sudo Security
 @cindex sudo, gaining superuser
 @cindex security, using sudo to restrict superuser access
@@ -225,7 +225,7 @@ If the path to @command{ifconfig} (see @ref{path_to_ifconfig configuration varia
 
 If you are not using a @ref{send_arp_command configuration variable} in your environment, then there is no need to specify one here.  If you're using something other than @command{/sbin/arping}, you should change the sudoers line accordingly.
 
-@node Restricting ssh access,  , Restricting sudo usage, ssh and sudo security
+@node Restricting ssh access, , Restricting sudo usage, ssh and sudo security
 @subsubsection Restricting ssh access
 @cindex ssh, restricting access
 @cindex security, using ssh to give user access
@@ -234,7 +234,7 @@ If you use a special account solely for Flipper on the nodes, sometimes called a
 
 An example restricted shell for use with Flipper can be found in @file{flippersh}.  This assumes @command{/sbin/arping} is being used in your @ref{send_arp_command configuration variable} - if something else (or indeed nothing) is being used, change the restricted shell accordingly.
 
-@node MySQL configuration,  , SSH and sudo configuration, Configuration
+@node MySQL configuration, , SSH and sudo configuration, Configuration
 @section MySQL configuration
 @cindex mysql, configuration
 @cindex mysql, privileges for metadata

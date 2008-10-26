@@ -4,7 +4,7 @@
 
 @menu
 * Obtaining Flipper::           
-* Installing Flipper from svn::  
+* Installing Flipper from svn:: 
 @end menu
 
 @node Obtaining Flipper, Installing Flipper from svn, Installation, Installation
@@ -22,7 +22,7 @@
 
 Pre-built packages for flipper can be downloaded from the @uref{http://mirror.provenscaling.com/extras/provenscaling/, Proven Scaling Mirror}.  If a package is not available for your operating environment, then don't fear - it's very easy to download the source code and install it.
 
-@node Source Code,  , Packages, Obtaining Flipper
+@node Source Code, , Packages, Obtaining Flipper
 @subsection Source Code
 @cindex installation, from Subversion
 @cindex svn, source repository for Flipper
@@ -35,7 +35,7 @@ svn checkout svn://svn.provenscaling.com/public/flipper/trunk/ flipper
 
 If you want to check Flipper out to a different directory, specify something other than @samp{flipper} as the second parameter to @command{svn checkout}.
 
-@node Installing Flipper from svn,  , Obtaining Flipper, Installation
+@node Installing Flipper from svn, , Obtaining Flipper, Installation
 @section Installing Flipper from svn
 
 @menu
@@ -48,14 +48,14 @@ If you want to check Flipper out to a different directory, specify something oth
 
 The flipper script assumes @file{perl} will be in @file{/usr/bin}.  If your Perl executable is located somewhere else, either change the @code{#!} line in the @file{flipper} script, or better still put a symlink in place in @file{/usr/bin/perl} to your @file{perl} binary, as there are plenty of other scripts out there which rely on @file{perl} being in @file{/usr/bin}.
 
-@node Copying files,  , Where's Perl?, Installing Flipper from svn
+@node Copying files, , Where's Perl?, Installing Flipper from svn
 @subsection Copying files
 
 You can either copy the @file{flipper} script to somewhere in your @env{PATH} and the Perl modules into @@INC, or simply run the @file{flipper} script from any directory (usually your home directory), invoke it as @command{./flipper} and copy the Perl modules into the same directory.
 
 @menu
-* Copying the script to your PATH::  
-* Installing into your home directory or other arbitary location::  
+* Copying the script to your PATH::
+* Installing into your home directory or other arbitary location::
 @end menu
 
 @node Copying the script to your PATH, Installing into your home directory or other arbitary location, Copying files, Copying files
@@ -70,7 +70,7 @@ Copy the @file{lib/Flipper} directory from subversion to some place in Perl's @c
 
 @file{/usr/lib/perl5/site_perl}, @file{/usr/local/lib/perl5/site_perl} on Linux, Solaris, and BSD, and @file{/Library/Perl} on Mac OS X are good places to put the @file{Flipper} directory.
 
-@node Installing into your home directory or other arbitary location,  , Copying the script to your PATH, Copying files
+@node Installing into your home directory or other arbitary location, , Copying the script to your PATH, Copying files
 @subsubsection Installing into your home directory or other arbitary location
 @cindex installation, into home directory
 

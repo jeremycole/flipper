@@ -1,4 +1,0 @@
-@node Concept Index, , Variable Index, Top
-@unnumbered Concept Index
-
-@printindex cp

@@ -7,10 +7,10 @@ These instructions relate to the pre-release versions of Flipper.
 
 @menu
 * Before you begin::            
-* Quick Start Installation::    
+* Quick Start Installation::    Installation
 * Metadata::                    
-* Pointing Flipper at the Metadata::  
-* Quick Start Configuration::   
+* Pointing Flipper at the Metadata::
+* Quick Start Configuration::   Configuration
 * Set up IP addresses::         
 * Using Flipper::               
 @end menu
@@ -160,7 +160,7 @@ By default, Flipper will use sudo for privilege escalation on the nodes, where r
 
 The security implications of the various possible settings for @ref{ssh_user configuration variable}, @ref{use_sudo configuration variable}, and ssh and sudo configuration on the nodes are significant.  You are strongly advised to make yourself aware of them.  See @ref{ssh and sudo security} for more information.
 
-@node Check configuration,  , SSH authentication, Quick Start Configuration
+@node Check configuration, , SSH authentication, Quick Start Configuration
 @subsection Check configuration
 
 Once you've pointed Flipper at the Metadata, and configured Flipper correctly, you should be able to use Flipper's @command{config} command to display the configuration information for a particular masterpair.  For example, to display all the configuration values for a masterpair called @samp{mike}:
@@ -234,7 +234,7 @@ NODE: second_node has write IP, is writable, replication running, 0s delay
 $
 @end example
 
-@node Using Flipper,  , Set up IP addresses, Quick Start
+@node Using Flipper, , Set up IP addresses, Quick Start
 @section Using Flipper
 
 This is just a quick overview of what Flipper can do.  More detail can be found elsewhere in this documentation.  Help is available on the command line by running @command{flipper --help} for usage information and @command{perldoc flipper} for a brief overview.

@@ -10,7 +10,7 @@ If you find a bug, please let us know which version of Flipper and Perl you're u
 * Known Bugs::                  
 @end menu
 
-@node Known Bugs,  , Bugs, Bugs
+@node Known Bugs, , Bugs, Bugs
 @section Known Bugs
 @cindex bugs, known
 @cindex known bugs

@@ -26,16 +26,16 @@ The @dfn{masterpair} is specified so Flipper knows what it's going to operate on
 
 If you give flipper an unknown command or option, you'll be presented with some brief usage help.  You can also display the usage information by running @command{flipper --help}.
 
-@node Commands,  , Command Line, Usage
+@node Commands, , Command Line, Usage
 @section Commands
 
 @menu
-* Displaying configuration - the config command::  
-* Displaying the status of a masterpair - the status command::  
-* Moving an IP to a node - the set command::  
-* Swapping IPs from one node to the other - the swap command::  
-* Moving IPs away from a node - the disable command::  
-* Handling a failed node - the fail command::  
+* Displaying configuration - the config command::Displaying configuration - the @command{config} command
+* Displaying the status of a masterpair - the status command::Displaying the status of a masterpair - the @command{status} command
+* Moving an IP to a node - the set command::Moving an IP to a node - the @command{set} command
+* Swapping IPs from one node to the other - the swap command::Swapping IPs from one node to the other - the @command{swap} command
+* Moving IPs away from a node - the disable command::Moving IPs away from a node - the @command{disable} command
+* Handling a failed node - the fail command::Handling a failed node - the @command{fail} command
 @end menu
 
 @node Displaying configuration - the config command, Displaying the status of a masterpair - the status command, Commands, Commands
@@ -254,7 +254,7 @@ $ @b{flipper mike disable second_node}
 INFO:  No IPs on the second_node node.
 @end example
 
-@node Handling a failed node - the fail command,  , Moving IPs away from a node - the disable command, Commands
+@node Handling a failed node - the fail command, , Moving IPs away from a node - the disable command, Commands
 @subsection Handling a failed node - the @command{fail} command
 @cindex failover, using fail command
 @cindex handling failure

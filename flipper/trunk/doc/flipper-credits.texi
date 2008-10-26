@@ -1,4 +1,4 @@
-@node Credits, Contacting Proven Scaling, Configuration Reference, Top
+@node Credits, License (LGPLv3), Configuration Reference, Top
 @chapter Credits
 @cindex contributors, credits
 @cindex credits, acknowledging contributors
