@@ -982,7 +982,7 @@ sub node_ssh_command
   print "DEBUG:  Executing ssh $ssh_user $ssh_ip $command\n" if $rh_options->{debug};
   # TODO:  Error reporting can be improved here by using IPC::Open3 to
   # capture STDERR as well as STDOUT from the external ssh command
-  my $result = `ssh -o "ConnectTimeout 10" $ssh_user $ssh_ip $command`;
+  my $result = `ssh -t -o "ConnectTimeout 10" $ssh_user $ssh_ip $command`;
   if ($?)
   {
     print "ERROR:  Error occurred when executing ssh $ssh_user $ssh_ip $command\n";
