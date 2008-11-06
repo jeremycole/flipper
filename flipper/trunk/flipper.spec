@@ -1,5 +1,5 @@
 Name: flipper
-Version: 0.2.0
+Version: 0.2.1
 Release: 0
 License: LGPL
 URL: http://www.provenscaling.com/
