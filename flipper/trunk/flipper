@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Copyright (c) 2007-2008, Proven Scaling LLC
+# Copyright (c) 2007-2009, Proven Scaling LLC
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ use strict;
 use Getopt::Long qw( GetOptions HelpMessage VersionMessage :config bundling auto_version auto_help );
 use Data::Dumper;
 use DBI;
-$main::VERSION = "0.2.1";
+$main::VERSION = "0.2.2";
 
 my $rh_options = parse_options();
 my ($masterpair, $command, $ra_parameters) = parse_commandline();
@@ -351,7 +351,7 @@ sub status_command
   my %ip_count;
   $ip_count{read}=0;
   $ip_count{write}=0;
-  foreach my $node (keys %$rhh_nodes_info)
+  foreach my $node (sort keys %$rhh_nodes_info)
   {
     if (defined $rhh_nodes_info->{$node}->{disabled} 
         && $rhh_nodes_info->{$node}->{disabled})
@@ -919,11 +919,11 @@ sub get_node_ip_info
       my $interface;
       foreach my $line (split(/\n/, $uname_and_ifconfig_output))
       {
-        if ( my ($match_if) = ($line =~ /(^\w+(?:\d+)?(?:\:\d+)?)/) )
+        if ( my ($match_if) = ($line =~ /(^(\w+(\.\d+)?\d*)(?:\:\d+)?)/) )
         {
           # line not starting with whitespace contains an interface definition at the start
           # remove the interface definition from the line, and set the current interface
-          $line =~ s/\w+\d(\:)?\s+//;
+          $line =~ s/(\w+(\.\d+)?\d*)(\:)?\s+//;
           $interface=$match_if;
         }
 
@@ -982,7 +982,7 @@ sub node_ssh_command
   print "DEBUG:  Executing ssh $ssh_user $ssh_ip $command\n" if $rh_options->{debug};
   # TODO:  Error reporting can be improved here by using IPC::Open3 to
   # capture STDERR as well as STDOUT from the external ssh command
-  my $result = `ssh -t -o "ConnectTimeout 10" $ssh_user $ssh_ip $command`;
+  my $result = `ssh -q -t -o "ConnectTimeout 10" $ssh_user $ssh_ip $command`;
   if ($?)
   {
     print "ERROR:  Error occurred when executing ssh $ssh_user $ssh_ip $command\n";
