@@ -1,0 +1,67 @@
+@node Future Developments, Platform Notes, Bugs, Top
+@chapter Future Developments
+
+The following are ideas for future releases of flipper:
+
+@itemize @bullet
+@item
+@b{Packaged builds}
+
+Provide RPMs for RHEL/CentOS, plus packages for other distributions and operating systems as required.
+
+@item
+@b{Second Read IP}
+
+In some scenarios, the read and write IPs will want to normally reside on the same host, with the other host being used for 'slow' reads for reporting purposes etc.  Adding a second read IP to Flipper would cater for this scenario.
+
+@item
+@b{Slave Support}
+
+If there are slaves pointing at a masterpair, replication to those slaves will almost definitely break when the IP that the slaves are pointing at moves from one host to another, because of differences in binary log positions.  By logging the binary log positions when the IP is moved, we can simplify the process of re-pointing slaves, at least in non-failure-event scenarios.
+
+@item
+@b{Logging}
+
+Logging of events in the metadata (or other) database, along with master replication status, to facilitate the above.
+
+@item
+@b{Ability to use script to manage metadata}
+
+At the moment, the only way to configure Flipper is to manipulate the metadata database directly.  This isn't very user friendly and there's no error checking.  There should be some facility to use a script to make configuration easier.
+
+@item
+@b{Bring up appropriate IPs on reboot}
+
+A script could be written to bring up and/or ensure the appropriate IPs are available on a machine.  Although it would not be difficult to make this script platform-independent, incorporating it into each operating system / distribution's rc chain would require substantially more effort.
+
+@item
+@b{Automatic Failover}
+
+Although we ruled out implementing automatic failover of read and write IP addresses on machine and/or replication failure for the first releases of Flipper, and we don't necessarily believe it to be a good idea, we're not ruling it out.
+
+@item
+@b{HP-UX support}
+
+The network interface and IP alias routines in Flipper don't work on HP-UX, but it would be possible to fix this if required.
+
+@item
+@b{Refactor code to OO style}
+
+Flipper's code would be a lot more elegant if it were refactored in an object oriented style.
+
+@item
+@b{Sanity checking of configuration}
+
+Flipper doesn't currently carry out much sanity checking of it's configuration - it should!
+
+@item
+@b{Consistency of output}
+
+The consistency of the output that Flipper produces when the @option{--verbose} and/or @option{--debug} options are used could be much improved.
+
+@item
+@b{Documentation Improvements}
+
+The documentation could be improved by adding notes on how to set up master-master replication, and a 'cookbook' with common use scenarios.
+
+@end itemize

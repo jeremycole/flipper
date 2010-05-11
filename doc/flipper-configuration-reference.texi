@@ -1,0 +1,173 @@
+@node Configuration Reference, Credits, Platform Notes, Top
+@chapter Configuration Reference
+@cindex configuration, variable reference
+
+This chapter describes the configuration variables available in Flipper.
+
+For more general information on how the configuration system works, @xref{Configuration}.
+
+Variables are either compulsory or optional.  They are either relevant to nodes or masterpairs only, or specific to the level at which they are defined.
+
+@menu
+* ip configuration variable::   ip
+* write_ip configuration variable::write_ip
+* read_ip configuration variable::read_ip
+* netmask configuration variable::netmask
+* broadcast configuration variable::broadcast
+* path_to_ifconfig configuration variable::path_to_ifconfig
+* ssh_ip configuration variable::ssh_ip
+* ssh_user configuration variable::ssh_user
+* use_sudo configuration variable::use_sudo
+* mysql_user configuration variable::mysql_user
+* mysql_password configuration variable::mysql_password
+* mysql_port configuration variable::mysql_port
+* interface configuration variable::interface
+* read_interface configuration variable::read_interface
+* write_interface configuration variable::write_interface
+* send_arp_command configuration variable::send_arp_command
+@end menu
+
+@node ip configuration variable, write_ip configuration variable, Configuration Reference, Configuration Reference
+@section ip
+@vindex ip
+
+Applicable to nodes only.  Compulsory - each node must have an @var{ip} variable defined.
+
+Specifies the IP address of each node.  Flipper will use this IP address to connect to MySQL on the node.
+
+@node write_ip configuration variable, read_ip configuration variable, ip configuration variable, Configuration Reference
+@section write_ip
+@vindex write_ip
+
+Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{write_ip} variable defined.
+
+This is the IP address which will be used for write access to MySQL.
+
+@node read_ip configuration variable, netmask configuration variable, write_ip configuration variable, Configuration Reference
+@section read_ip
+@vindex read_ip
+
+Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{read_ip} variable defined.
+
+This is the IP address which will be used for read access to MySQL.
+
+@node netmask configuration variable, broadcast configuration variable, read_ip configuration variable, Configuration Reference
+@section netmask
+@vindex netmask
+
+Applicable to masterpairs only.  Compulsory - each masterpair must have a @var{netmask} variable defined.
+
+This is the netmask for the read_ip and write_ip.  It's normally the same as the netmask for the nodes' main IPs, but doesn't necessarily have to be the same.
+
+@node broadcast configuration variable, path_to_ifconfig configuration variable, netmask configuration variable, Configuration Reference
+@section broadcast
+@vindex broadcast
+
+Applicable to masterpairs only.  Optional.
+
+This is the broadcast address for the network for the read_ip and write_ip.  Not needed for normal use but may be required for sending ARP messages.
+
+@node path_to_ifconfig configuration variable, ssh_ip configuration variable, broadcast configuration variable, Configuration Reference
+@section path_to_ifconfig
+@vindex path_to_ifconfig
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to @file{/sbin}.
+
+If the ifconfig command doesn't exist in @file{/sbin}, for example on FreeBSD where it is in @file{/usr/sbin}, specify this variable to point Flipper to the correct location.
+
+@node ssh_ip configuration variable, ssh_user configuration variable, path_to_ifconfig configuration variable, Configuration Reference
+@section ssh_ip
+@vindex ssh_ip
+
+Applicable to nodes only.  Optional.
+
+If ssh is bound to a different IP address than MySQL on a node, define a @var{ssh_ip} variable for that node, and Flipper will use that IP address for ssh rather than the one specified by the @var{ip} variable.
+
+@node ssh_user configuration variable, use_sudo configuration variable, ssh_ip configuration variable, Configuration Reference
+@section ssh_user
+@vindex ssh_user
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to @code{root}.
+
+This specifies the user which will Flipper will use to ssh to the nodes.  If you don't want it to use the @code{root} user, then specify this variable.
+
+@node use_sudo configuration variable, mysql_user configuration variable, ssh_user configuration variable, Configuration Reference
+@section use_sudo
+@vindex use_sudo
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to 0, which means "no".
+
+If set to 1, Flipper will use sudo for privilege escalation when carrying out operations on nodes (such as bringing up and taking down IP aliases) which require superuser privileges.
+
+@node mysql_user configuration variable, mysql_password configuration variable, use_sudo configuration variable, Configuration Reference
+@section mysql_user
+@vindex mysql_user
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to @code{root}.
+
+This is the user which Flipper will use to connect to MySQL on the nodes.  This is not the user which is used to connect to the metadata database - that is specified using the @code{--username} command line switch or in @file{my.cnf}.
+
+@node mysql_password configuration variable, mysql_port configuration variable, mysql_user configuration variable, Configuration Reference
+@section mysql_password
+@vindex mysql_password
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to empty string.
+
+This is the password which Flipper will use to connect to MySQL on the nodes.  This is not the user which is used to connect to the metadata database - that is specified using the @code{--password} command line switch or in @file{my.cnf}.
+
+@node mysql_port configuration variable, interface configuration variable, mysql_password configuration variable, Configuration Reference
+@section mysql_port
+@vindex mysql_port
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to 3306.
+
+If MySQL on the nodes runs on a non-standard port, use this variable to specify the port number.
+
+@node interface configuration variable, read_interface configuration variable, mysql_port configuration variable, Configuration Reference
+@section interface
+@vindex interface
+
+Specific to node or masterpair, whereever defined.  Potentially compulsory.  No default value.
+
+This variable specifies the interface to be used for the read and write IP addresses which are controlled by Flipper on the nodes.
+
+If no value is configured and there's only a single interface on a node, that single interface will be used.
+
+If no value is configured and multiple interfaces exist on a node, the interface must be specified.
+
+@node read_interface configuration variable, write_interface configuration variable, interface configuration variable, Configuration Reference
+@section read_interface
+@vindex read_interface
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to an automatically assigned interface.
+
+The exact interface to bring up the @code{read_ip} on, for example @code{eth0:98}.
+
+@node write_interface configuration variable, send_arp_command configuration variable, read_interface configuration variable, Configuration Reference
+@section write_interface
+@vindex write_interface
+
+Specific to node or masterpair, whereever defined.  Optional.  Defaults to an automatically assigned interface.
+
+The exact interface to bring up the @code{write_ip} on, for example @code{eth0:99}.
+
+@node send_arp_command configuration variable, , write_interface configuration variable, Configuration Reference
+@section send_arp_command
+@vindex send_arp_command
+
+Specific to node or masterpair, whereever defined.  Optional.  No default value.
+
+Specifies the command which will be used to send ARP messages when an IP address is brought up on a node.
+
+The following variables will be interpolated into the command:
+
+@itemize @bullet
+@item
+@var{$sendarp_ip} - the IP address which is being brought up
+@item
+@var{$sendarp_netmask} - the netmask
+@item
+@var{$sendarp_broadcast} - the broadcast address of the network (only available if the @ref{broadcast configuration variable} variable has been specified)
+@item
+@var{$sendarp_interface} - the physical interface on which the IP address has been brought up
+@end itemize

@@ -1,0 +1,58 @@
+@node Platform Notes, Configuration Reference, Future Developments, Top
+@chapter Platform Notes
+@cindex platforms
+
+@menu
+* Linux::                       
+* HP-UX::                       
+* Unsupported Platforms::       
+@end menu
+
+@node Linux, HP-UX, Platform Notes, Platform Notes
+@section Linux
+@cindex platforms, linux
+
+@subsection ARP announcements
+
+ARP annoucements (also known as "Gratuitous ARPs") are normally sent out when an IP address becomes available on a particular physical interface.  Other devices (switches, routers and nodes) on the network will use these ARP announcements to maintain a mapping of physical interface (MAC address) to IP address, so packets for a particular IP address get sent to the correct physical interface.  This mapping is commonly known as an ARP table.
+
+Linux, unlike other operating systems, does not automatically send ARP announcements when an IP address is brought up on an interface.  Therefore, when using Flipper to manage nodes running Linux, Flipper needs to send out the ARP announcements itself.
+
+The @ref{send_arp_command configuration variable} configuration variable is used to tell Flipper how the ARP announcements should be sent out.
+
+The most convenient way to send out ARP announcements differs from distribution to distribution.
+
+@menu
+* RHEL/CentOS::                 
+* Debian::                      
+@end menu
+
+@node RHEL/CentOS, Debian, Linux, Linux
+@subsection RHEL/CentOS
+@cindex platforms, linux, rhel
+@cindex linux, rhel
+@cindex debian
+
+The @command{/sbin/arping} command (supplied as standard with the distribution) can be used to send the ARP announcements.  The best value for @ref{send_arp_command configuration variable} is @code{/sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip} - supply the absolute pathname because @file{/sbin} isn't normally in the default path.
+
+@node Debian, , RHEL/CentOS, Linux
+@subsection Debian
+@cindex platforms, linux, debian
+@cindex linux, debian
+@cindex debian
+
+The @command{arping} command as supplied by default with RHEL/CentOS can be obtained from the package repository.
+
+@node HP-UX, Unsupported Platforms, Linux, Platform Notes
+@section HP-UX
+@cindex platforms, HP-UX
+@cindex HP-UX
+
+Flipper's network interface and IP alias handling code does not work on HP-UX.  Therefore, it is not possible to use Flipper to manage nodes running HP-UX.  It is however possible to run the @command{flipper} script on a node running HP-UX to manage a masterpair where the nodes run Linux, FreeBSD or another supported operating system.
+
+@node Unsupported Platforms, , HP-UX, Platform Notes
+@section Unsupported Platforms
+@cindex platforms, unsupported
+@cindex Windows
+
+Windows, VMS and i5/OS are not supported, and are not likely to be in the future.

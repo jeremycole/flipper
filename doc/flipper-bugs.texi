@@ -1,0 +1,24 @@
+@node Bugs, Future Developments, Applications and Flipper, Top
+@chapter Bugs
+@cindex bugs
+
+There are almost definitely plenty of bugs in flipper.  We would be delighted to hear from you if you find a bug - see @xref{Contacting Proven Scaling}.
+
+If you find a bug, please let us know which version of Flipper and Perl you're using (give us the output of @command{flipper --version}), let us know the platform(s) you're using (operating system, version, distribution, hardware) and also send us the output that Flipper produces when reproducing the bug when invoked with the @option{--verbose} and @option{--debug} switches (or @option{-vd} for short).
+
+@menu
+* Known Bugs::                  
+@end menu
+
+@node Known Bugs, , Bugs, Bugs
+@section Known Bugs
+@cindex bugs, known
+@cindex known bugs
+
+Display of replication delay causes an error when using MySQL 4.0 servers.  The @var{Seconds_Behind_Master} variable is used to determine replication delay, and this is only present in MySQL 4.1.1 and newer.  It is possible to determine the replication delay on MySQL 4.0 from the @var{Time} column in the processlist for the slave SQL thread.
+
+Behaviour of @command{swap} command when an IP is not up on either host is accidentally fixed to taking it down on the second of the two nodes in the masterpair (which will of course fail, as it's not up on that node) and bringing it up on the first of the two nodes.  Correct behaviour should be to do nothing with that IP, and potentially print a warning.
+
+If both read and write IPs are on the same node, the @command{status} command complains that MySQL on the node with the read IP is writable, which is of course very desirable in this case, and shouldn't generate a warning.
+
+A node with no IPs assigned to it should default to being read-only.  Currently the behaviour is undefined.

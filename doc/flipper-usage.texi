@@ -1,0 +1,273 @@
+@node Usage, Applications and Flipper, Configuration, Top
+@chapter Usage
+
+Typically, the read IP will be up on one node, and the write IP will be up on the other node.  There's nothing to stop you having both read and write IPs up on the same node though.  This can be very useful in certain situations, for example if you've got unbalanced hardware (one node significantly more powerful or loaded than the other) or as a short term measure if there are connectivity issues or maintenance is being carried out.
+
+@menu
+* Command Line::                
+* Commands::                    
+@end menu
+
+@node Command Line, Commands, Usage, Usage
+@section Command Line
+@cindex command line
+@cindex CLI
+@pindex flipper
+
+Flipper takes options, a masterpair, a command and sometimes parameters on it's command line:
+
+@command{flipper [<options>] [<masterpair> <command> [<parameters>]]}
+
+@dfn{Options} control the general operation of Flipper, for example @option{-v} or @option{--verbose} which turns on verbose output and @option{-m} or @option{--metadata} which tells Flipper where to find it's metadata.
+
+The @dfn{masterpair} is specified so Flipper knows what it's going to operate on.  If no masterpair is specified, Flipper will display a list of the available masterpairs.
+
+@dfn{Commands} tell Flipper what to do.  @dfn{Parameters} are used by the commands.  Some commands, such as @command{status} require no parameters.  Others, such as the @command{disable} command, require paramters - in this case, the name of a node to disable.
+
+If you give flipper an unknown command or option, you'll be presented with some brief usage help.  You can also display the usage information by running @command{flipper --help}.
+
+@node Commands, , Command Line, Usage
+@section Commands
+
+@menu
+* Displaying configuration - the config command::Displaying configuration - the @command{config} command
+* Displaying the status of a masterpair - the status command::Displaying the status of a masterpair - the @command{status} command
+* Moving an IP to a node - the set command::Moving an IP to a node - the @command{set} command
+* Swapping IPs from one node to the other - the swap command::Swapping IPs from one node to the other - the @command{swap} command
+* Moving IPs away from a node - the disable command::Moving IPs away from a node - the @command{disable} command
+* Handling a failed node - the fail command::Handling a failed node - the @command{fail} command
+@end menu
+
+@node Displaying configuration - the config command, Displaying the status of a masterpair - the status command, Commands, Commands
+@subsection Displaying configuration - the @command{config} command
+@cindex configuration, displaying
+@pindex config
+
+To display the configuration of a masterpair and it's nodes, use the @command{config} command.  The masterpair name will be displayed, followed by the configuration variables for that masterpair.  After that, for each node, the node name and configuration variables specific to that node will be displayed:
+
+@example
+$ @b{flipper customerdata config}
+MASTERPAIR: customerdata
+        write_ip: 192.168.4.54
+        send_arp_command: /sbin/arping -I $sendarp_interface -c 5 -U -A $sendarp_ip
+        read_ip: 192.168.4.55
+        netmask: 255.255.240.0
+NODE: dell_2850
+        ip: 192.168.3.234
+	interface: eth0
+NODE: hp_dl380
+        ip: 192.168.2.52
+	interface: eth1
+$ 
+@end example 
+
+@node Displaying the status of a masterpair - the status command, Moving an IP to a node - the set command, Displaying configuration - the config command, Commands
+@subsection Displaying the status of a masterpair - the @command{status} command
+@cindex status, investigating
+@pindex status
+
+The @command{status} command can be used to display the current status of a masterpair.  It also acts as a healthcheck for the current operation of the masterpair - if there are any problems, warnings will be given.
+
+Information about which nodes have which IPs, the read-only or read-write state of the MySQL server and the replication state are given.  A typical 'healthy' status output should look like this:
+
+@example
+$ @b{flipper customerdata status}
+MASTERPAIR: customerdata
+NODE: dell_2850 has read IP, is read-only, replication running, 0s delay
+NODE: hp_dl380 has write IP, is writable, replication running, 0s delay
+$
+@end example
+
+Warnings will be displayed if there are any problems:
+
+@itemize @bullet
+@item Any IP is up on more than one node, or not up on any node
+@item Replication isn't running
+@item Inconsistencies in read-only / read-write state (eg. if the server has the write IP, but is read-only)
+@item Problems connecting to MySQL or ssh on any node
+@end itemize
+
+@node Moving an IP to a node - the set command, Swapping IPs from one node to the other - the swap command, Displaying the status of a masterpair - the status command, Commands
+@subsection Moving an IP to a node - the @command{set} command
+@cindex moving ip, failover
+@cindex failover, using set command
+@pindex set
+
+The @command{set} command ensures that the specified IP is up on the given node.  It takes two parameters - firstly the name of an IP, and secondly, the name of a node.
+
+If the IP is currently up on the other node to the given one, then it will be taken down on that other node and brought up on the given node.  If the write IP is being moved, replication will be synced.
+
+Nothing will happen if the specified IP is already up on the given node and an information message will be displayed.  If the specified IP is not up on the other node to the one given (ie. it is not up on either node), no attempt will be made to take down the IP from the other node, but if the write IP is being dealt with, replication will still be synced.
+
+The following example demonstrates the use of the @command{set} command:
+
+First, display status of customerdata masterpair:
+
+@example
+$ @b{flipper customerdata status}
+MASTERPAIR: customerdata
+NODE: dell_2850 has read IP, is writable, replication running, 0s delay
+NODE: hp_dl380 is writable, replication running, 0s delay
+WARNING: MySQL server on read IP is writable
+WARNING: No node has the write IP
+@end example
+
+Put the write IP on dell_2850:
+
+@example
+$ @b{flipper customerdata set write dell_2850}
+WARNING: write IP is not up on hp_dl380 node.
+WARNING: Won't attempt to take down write IP on hp_dl380 node.
+@end example
+
+Display status again, noticing that dell_2850 now has the write IP:
+
+@example
+$ @b{flipper customerdata status} 
+MASTERPAIR: customerdata
+NODE: dell_2850 has read IP, has write IP, is writable, replication running, 0s delay
+NODE: hp_dl380 is read-only, replication running, 0s delay
+@end example
+
+Put the read IP onto hp_dl380:
+
+@example
+$ @b{flipper customerdata set read hp_dl380}
+@end example
+
+Display status again, noticing that the read IP has moved to hp_dl380:
+
+@example
+$ @b{flipper customerdata status}
+MASTERPAIR: customerdata
+NODE: dell_2850 has write IP, is writable, replication running, 0s delay
+NODE: hp_dl380 has read IP, is read-only, replication running, 0s delay
+@end example
+
+Finally, put write IP on dell_2850.  This has no effect, as it's already there:
+
+@example
+$ @b{flipper customerdata set write dell_2850}
+INFO:  The write IP is already up on the dell_2850 node.
+@end example
+
+@node Swapping IPs from one node to the other - the swap command, Moving IPs away from a node - the disable command, Moving an IP to a node - the set command, Commands
+@subsection Swapping IPs from one node to the other - the @command{swap} command
+@cindex failover, using swap command
+@pindex swap
+
+The @command{swap} command moves a single IP, or all IPs to the other node to the one on which they're running.  It takes an optional parameter, which is the name of an IP.  If this parameter is specified, then only the given IP will be swapped to the other node.  If this parameter is not specified, all the IPs will be moved to the other node.
+
+The following example demonstrates the use of the @command{swap} command:
+
+First, display status of masterpair:
+
+@example
+$ @b{flipper customerdata status}
+MASTERPAIR: customerdata
+NODE: dell_2850 has read IP, has write IP, is writable, replication running, 0s delay
+NODE: hp_dl380 is read-only, replication running, 0s delay
+@end example
+
+Move the read IP to the other node:
+
+@example
+$ @b{flipper customerdata swap read}
+@end example
+
+Display status again, noticing that the read IP has moved to the other node:
+
+@example
+$ @b{flipper customerdata status}
+MASTERPAIR: customerdata
+NODE: dell_2850 has write IP, is writable, replication running, 0s delay
+NODE: hp_dl380 has read IP, is read-only, replication running, 0s delay
+@end example
+
+Move all IPs to the other node:
+
+@example
+$ @b{flipper customerdata swap}
+@end example
+
+Display status again, noticing that the IPs have moved to the other node:
+
+@example
+$ @b{flipper customerdata status}
+MASTERPAIR: customerdata
+NODE: dell_2850 has read IP, is read-only, replication running, 0s delay
+NODE: hp_dl380 has write IP, is writable, replication running, 0s delay
+@end example
+
+@node Moving IPs away from a node - the disable command, Handling a failed node - the fail command, Swapping IPs from one node to the other - the swap command, Commands
+@subsection Moving IPs away from a node - the @command{disable} command
+@cindex failover, using disable command
+@pindex disable
+
+If you wish to remove all IPs from a node, perhaps to undertake some maintenance work, then use the @command{disable} command.  It requires a single parameter, which is the name of a node.  All the IPs which are up on the specified node will be moved to the other node.  If there are no IPs up on the specified node, nothing will happen and an informational message will be displayed.
+
+The following example demonstrates the use of the @command{disable} command:
+
+First, display status:
+
+@example
+$ @b{flipper mike status}
+MASTERPAIR: mike
+NODE: first_node has read IP, is read-only, replication running, 0s delay
+NODE: second_node has write IP, is writable, replication running, 0s delay
+@end example
+
+Disable dell_2850, that is, move read IP to hp_dl380:
+
+@example
+$ @b{flipper mike disable first_node}
+@end example
+
+Show status, noticing that the read IP has moved to hp_dl380:
+
+@example
+$ @b{flipper mike status}
+MASTERPAIR: mike
+NODE: first_node is read-only, replication running, 0s delay
+NODE: second_node has read IP, has write IP, is writable, replication running, 0s delay
+@end example
+
+Disable hp_dl380, that is, move all IPs to dell_2850:
+
+@example
+$ @b{flipper mike disable second_node}
+@end example
+
+Show status again, noticing that all IPs have now moved to dell_2850:
+
+@example
+$ @b{flipper mike status}
+MASTERPAIR: mike
+NODE: first_node has read IP, has write IP, is writable, replication running, 0s delay
+NODE: second_node is read-only, replication running, 0s delay
+@end example
+
+There are no IPs on the second node, so disable will do nothing:
+
+@example
+$ @b{flipper mike disable second_node}
+INFO:  No IPs on the second_node node.
+@end example
+
+@node Handling a failed node - the fail command, , Moving IPs away from a node - the disable command, Commands
+@subsection Handling a failed node - the @command{fail} command
+@cindex failover, using fail command
+@cindex handling failure
+@pindex fail
+
+The @command{set}, @command{swap} and @command{disable} commands all rely on being able to connect to ssh and MySQL on both nodes in order to carry out operations.  This is to ensure that the masterpair is always in a consistent, operable state.
+
+If a node fails due to hardware or network failure, and there is no prospect of recovery of that node within an acceptable timeframe, then it is possible to use the @command{fail} command.
+
+Under normal circumstances, the @command{fail} command acts exactly the same as the @command{disable} command - it will remove IPs from the given node, and bring them up on the other node, whilst ensuring the masterpair is in a consistent, operable state.
+
+The @command{fail} command differs in that it will attempt to contact the failed node, and if it can't, it will carry on regardless.  As such, the @option{--yes} option must be specified on the command line to confirm that the user wishes to carry out this operation.
+
+If a node has suffered a problem with MySQL, but can still be contacted via ssh, then the @command{fail} command will handle moving IPs away from the failed node correctly, but will not attempt to synchronise replication.  
+
+If a node cannot be contacted via ssh, then the @command{fail} command won't be able to take down the IPs from the failed node.  There are dangers associated with this, as it could potentially leave a masterpair in an inconsistent state - for example, if used to fail a node which is only temporarily inaccessible, when that node comes back, one or more IPs will be up on both nodes.

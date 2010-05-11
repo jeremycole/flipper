@@ -1,0 +1,253 @@
+@node Configuration, Usage, Installation, Top
+@chapter Configuration
+
+@menu
+* Metadata Storage::            
+* Metadata Access::             
+* Configuration Variables::     
+* Masterpair and Node names::   
+* Network configuration::       
+* SSH and sudo configuration::  
+* MySQL configuration::         
+@end menu
+
+@node Metadata Storage, Metadata Access, Configuration, Configuration
+@section Metadata Storage
+
+Flipper has a very flexible and extensible metadata storage system.
+
+In theory it is possible for metadata to be stored anywhere in any arbitary format.
+
+Currently only access to metadata stored in a database using Perl's DBI is implemented, but others can be put in place later, such as XML or YAML.
+
+@menu
+* DBI metadata storage::        
+@end menu
+
+@node DBI metadata storage, , Metadata Storage, Metadata Storage
+@subsection DBI metadata storage
+
+Any DBMS that's supported by DBI can be used to store Flipper's metadata.  Currently only MySQL has been tested, but if you have success or failure using another DBMS, please let us know.
+
+There are no restrictions on where the metadata database resides - it can live anywhere, as long as Flipper can get access to read from it.
+
+Currently, Flipper requires only read access to the metadata database.  Future versions of Flipper will require write access to the metadata database.
+
+The metadata database contains two tables - one for information relating to masterpairs, and one for information specific to nodes.  The schema is available in the sql/metadata.sql file in subversion.
+
+@node Metadata Access, Configuration Variables, Metadata Storage, Configuration
+@section Metadata Access
+
+@menu
+* Data Source Naming Scheme::   
+* Authentication::              
+* Pointing Flipper at Metadata::
+@end menu
+
+@node Data Source Naming Scheme, Authentication, Metadata Access, Metadata Access
+@subsection Data Source Naming Scheme
+
+Flipper uses a naming scheme for it's data source names (DSNs) which is compatible with Perl's DBI.
+
+When storing metadata in a DBMS and accessing it using DBI, the DSN should be the same as would be passed in a @code{DBI->connect} call, for example @code{DBI:mysql:database=flippermetadata;mysql_socket=/tmp/mysql.sock}.
+
+Other metadata storage methods can be chosen by specifying something other than @code{DBI} before the first colon in the DSN - for example, a future YAML storage method might be specified using @code{YAML:file=/etc/flipper.yaml"}.
+
+@node Authentication, Pointing Flipper at Metadata, Data Source Naming Scheme, Metadata Access
+@subsection Authentication
+
+As well as the DSN, Flipper can use a username and password if the metadata storage method requires authentication to be used.
+
+@node Pointing Flipper at Metadata, , Authentication, Metadata Access
+@subsection Pointing Flipper at Metadata
+
+The three items of information (metadata DSN, username and password) can be passed to flipper on the command line.
+
+Use the @code{--metadata} or @code{-m} switch to tell Flipper where to find the metadata.  The @code{--username} or @code{-u} and @code{--password} or @code{-p} switches specify the username and password respectively.
+
+You will probably find it more convenient to add a @code{[flipper]} section to your @code{my.cnf} file (or create a @code{~/.my.cnf} file) containing lines for the metadata DSN, username and password, like this:
+
+@example
+[flipper]
+metadata=DBI:mysql:database=flippermetadata;mysql_socket=/tmp/mysql.sock
+username=flippermetadata
+password=letmein
+@end example
+
+Any options provided on the command line will override those specified in a @code{my.cnf} file.
+
+@node Configuration Variables, Masterpair and Node names, Metadata Access, Configuration
+@section Configuration Variables
+@cindex configuration
+
+There are three types of configuration variable in Flipper:
+
+@itemize @bullet
+@item
+Masterpair configuration variables
+@item
+Node configuration variables
+@item
+Cascading variables
+@end itemize
+
+Configuration variables have a @dfn{name} and a @dfn{value}.  Some configuration variables are compulsory, some are optional.  Some optional configuration variables have a @dfn{default value} which is used if the variable is not specified.
+
+Masterpair configuration variables and node configuration variables are specific to masterpairs and nodes respectively.
+
+Cascading variables can be specified at masterpair or node level.  If a cascading variable is specified at node level, then it will be used for that node.  If a cascading variable is specified at masterpair level, then it will be used for both nodes in the masterpairs - unless it's also specified at node level, in which case the node level value will override the masterpair level value.
+
+@node Masterpair and Node names, Network configuration, Configuration Variables, Configuration
+@section Masterpair and Node names
+
+Masterpair and node names can be up to 20 characters long, and must not contain spaces.  The use of other characters which might confuse the shell isn't recommended - stick to alphanumerics, underscore, hyphen and dot to be safe.
+
+Node names are used internally by Flipper only.  They need not bear any resemblance to actual hostnames.  You could use @samp{first_node} and @samp{second_node} for the two nodes in all your masterpairs, or you may feel more comfortable using node names which resemble the hostnames.
+
+@node Network configuration, SSH and sudo configuration, Masterpair and Node names, Configuration
+@section Network configuration
+
+@menu
+* IP address configuration::    
+* Interface configuration::     
+@end menu
+
+@node IP address configuration, Interface configuration, Network configuration, Network configuration
+@subsection IP address configuration
+
+@menu
+* Node IP addresses::           
+* Read and Write IP addresses:: 
+* Netmask and Broadcast addresses::
+@end menu
+
+@node Node IP addresses, Read and Write IP addresses, IP address configuration, IP address configuration
+@subsubsection Node IP addresses
+@vindex ssh_ip
+
+Each node has a base IP address.  This is stored as the @ref{ip configuration variable} at node level.
+
+Flipper will use this base IP address to connect to the node's ssh daemon and MySQL server.  If the ssh daemon is bound to a different IP address to the base address on the node, then you can store the IP address for ssh connections as @ref{ssh_ip configuration variable} at node level.
+
+The MySQL server must be listening on the base IP address of the node.
+
+@node Read and Write IP addresses, Netmask and Broadcast addresses, Node IP addresses, IP address configuration
+@subsubsection Read and Write IP addresses
+@vindex read_ip
+@vindex write_ip
+
+The read and write IP addresses are used by external clients to query the data stored on the masterpair.  Clients performing read operations only should connect to the read IP address.  Clients performing read/write operations should connect to the write IP address.  These are stored as @ref{read_ip configuration variable} and @ref{write_ip configuration variable} at masterpair level.
+
+The read and write IP addresses need not be on the same network (either in a physical or logical sense) as the base address of the nodes.  They do however need to be on the same network as each other.
+
+@node Netmask and Broadcast addresses, , Read and Write IP addresses, IP address configuration
+@subsubsection Netmask and Broadcast addresses
+@vindex netmask
+@vindex broadcast
+
+Flipper also needs to know the netmask, and in some cases the broadcast address, for the network on which the read and write IP addresses reside.  Although the broadcast address is not always required, it's advisable to always configure it.
+
+These are stored as @ref{netmask configuration variable} and @ref{broadcast configuration variable} at masterpair level.
+
+@node Interface configuration, , IP address configuration, Network configuration
+@subsection Interface configuration
+@vindex interface
+
+Flipper needs to know which physical network interface it should use for the read and write IP addresses on each node.  If there is only one physical interface configured, then Flipper will use that.  If there are multiple physical interfaces on the machine, then Flipper will need to be told which one to use.
+
+The interface is stored as @ref{interface configuration variable}.  This can be stored at either masterpair level, or node level.  If both nodes are to use the same interface for the read and write IPs, then store it at masterpair level, and it will be applied to both nodes.
+
+@node SSH and sudo configuration, MySQL configuration, Network configuration, Configuration
+@section SSH and sudo configuration
+@vindex ssh_ip
+@vindex ssh_user
+@vindex use_sudo
+
+In order to execute commands on the nodes, Flipper needs to be able to connect to the nodes using ssh.  The following configuration variables are used to control how Flipper connects using ssh to the nodes:
+
+@itemize @bullet
+@item
+@ref{ssh_ip configuration variable}
+@item
+@ref{ssh_user configuration variable}
+@item
+@ref{use_sudo configuration variable}
+@end itemize
+
+The default configuration is that @ref{ssh_ip configuration variable} is unset, @ref{ssh_user configuration variable} is unset and @ref{use_sudo configuration variable} is set to 1, representing "on".
+
+As described above, if the ssh daemon is bound to a different IP address to the base address on any node, then you can store the IP address for ssh connections as @ref{ssh_ip configuration variable} at node level.  If Flipper is to use the base IP address of a node for ssh connections, @ref{ssh_ip configuration variable} should not be defined for that node.
+
+@ref{ssh_user configuration variable} is the user which Flipper will connect as via ssh.  If this is unset, Flipper will use the current user to ssh to the nodes, unless overridden by a setting in @file{~/.ssh/config}.
+
+If the @ref{ssh_user configuration variable} is a non-@code{root} user, then you should leave @ref{use_sudo configuration variable} set to 1.  This will enable Flipper to use sudo to execute commands which require superuser access - typically the commands used to bring up and take down IP aliases on the nodes.
+
+If you have set @ref{ssh_user configuration variable} to @samp{root}, then you can disable the use of sudo by changing the @ref{use_sudo configuration variable} to 0.
+
+Although @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} can both be specified at node level, we recommend that they are only specified at masterpair level and nodes within a masterpair are identically configured.
+
+@menu
+* ssh and sudo security::       SSH and sudo Security
+@end menu
+
+@node ssh and sudo security, , SSH and sudo configuration, SSH and sudo configuration
+@subsection SSH and sudo Security
+@cindex sudo, gaining superuser
+@cindex security, using sudo to restrict superuser access
+@vindex ssh_user
+@vindex use_sudo
+
+You should ensure that you are fully aware of the security implications of how you configure Flipper to work with ssh.  The default settings of @ref{ssh_user configuration variable} and @ref{use_sudo configuration variable} may not be appropriate for the security environment in your organisation.
+
+We would recommend that Flipper be configured to connect to nodes as a specified user with a restricted shell, allowing connections only from the appropriate IP address(es), and privilege escalation for that user via sudo should be restricted to the required commands only.
+
+@menu
+* Restricting sudo usage::      
+* Restricting ssh access::      
+@end menu
+
+@node Restricting sudo usage, Restricting ssh access, ssh and sudo security, ssh and sudo security
+@subsubsection Restricting sudo usage
+@cindex sudo, restricting access
+@cindex sudoers, configuration for Flipper
+
+We recommend that you restrict sudo usage to the bare minimum that Flipper requires to operate.  This is particularly important if you are using a role account (eg. an account called @samp{flipper}) for Flipper to use on the nodes.
+
+In order to do this, add the following line to your sudoers file.  Always edit the sudoers file by using the @command{visudo} command.
+
+@example
+flipper ALL = NOPASSWD: /sbin/ifconfig, /sbin/arping
+@end example
+
+This command instructs sudo to allow the @samp{flipper} user access to run the @command{/sbin/ifconfig} and @command{/sbin/arping} commands as root without a password.
+
+If the path to @command{ifconfig} (see @ref{path_to_ifconfig configuration variable}) is different on your system, you should change the sudoers line accordingly.
+
+If you are not using a @ref{send_arp_command configuration variable} in your environment, then there is no need to specify one here.  If you're using something other than @command{/sbin/arping}, you should change the sudoers line accordingly.
+
+@node Restricting ssh access, , Restricting sudo usage, ssh and sudo security
+@subsubsection Restricting ssh access
+@cindex ssh, restricting access
+@cindex security, using ssh to give user access
+
+If you use a special account solely for Flipper on the nodes, sometimes called a headless, role or anonymous account, then it is usually desirable to use a restricted shell for that account to stop the role account being used for anonymous actions on the server.
+
+An example restricted shell for use with Flipper can be found in @file{flippersh}.  This assumes @command{/sbin/arping} is being used in your @ref{send_arp_command configuration variable} - if something else (or indeed nothing) is being used, change the restricted shell accordingly.
+
+@node MySQL configuration, , SSH and sudo configuration, Configuration
+@section MySQL configuration
+@cindex mysql, configuration
+@cindex mysql, privileges for metadata
+@vindex mysql_user
+@vindex mysql_password
+@vindex mysql_port
+
+Flipper needs to connect to MySQL on the nodes.
+
+In order to do this, the @ref{mysql_user configuration variable}, @ref{mysql_password configuration variable} and @ref{mysql_port configuration variable} configuration variables are used to specify the username and password that should be used to connect to MySQL, and the port on the node which should be connected to.
+
+MySQL should be bound to the base IP address of each node.
+
+The user that Flipper connects to on the nodes requires the @code{SUPER} privilege.
+
+We recommend that you create a user exclusively for the use of Flipper with just the @code{SUPER} privilege.  We recommend not using the MySQL @code{root} user for use with Flipper.

@@ -1,0 +1,14 @@
+@node Credits, License (LGPLv3), Configuration Reference, Top
+@chapter Credits
+@cindex contributors, credits
+@cindex credits, acknowledging contributors
+
+Proven Scaling would like to thank the following people for their contributions towards Flipper:
+
+@itemize @bullet
+@item
+@b{Graham Wood, Jon Topper, Wayne Pascoe} for hardware for testing Flipper on multiple platforms.
+
+@item
+@b{Barry Leung} for a timely donation of a copy of "Mastering Perl" to the cause.
+@end itemize
