@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Copyright (c) 2007-2009, Proven Scaling LLC
+# Copyright (c) 2007-2011, Proven Scaling LLC and others
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ use strict;
 use Getopt::Long qw( GetOptions HelpMessage VersionMessage :config bundling auto_version auto_help );
 use Data::Dumper;
 use DBI;
-$main::VERSION = "0.2.2";
+$main::VERSION = "0.2.3";
 
 my $rh_options = parse_options();
 my ($masterpair, $command, $ra_parameters) = parse_commandline();
@@ -1001,8 +1001,20 @@ sub get_node_dbh
   my $user = config('mysql_user', $node);
   my $password = config('mysql_password', $node);
   my $port = config('mysql_port', $node);
+  my $timeout = config('mysql_timeout', $node);
   my $host = $rhh_nodes_info->{$node}->{ip};
-  my $dbh = DBI->connect_cached("DBI:mysql:host=$host;port=$port", $user, $password, { PrintError => 0, RaiseError => 0});
+  my $dbh;
+  eval {
+    local $SIG{ALRM} = sub { die "timeout\n" };
+    alarm($timeout);
+    $dbh = DBI->connect_cached("DBI:mysql:host=$host;port=$port", $user, $password, { PrintError => 0, RaiseError => 0});
+    alarm(0);
+  };
+  alarm(0);
+  if ($@ eq "timeout\n")
+  {
+    print "ERROR: Timed out connecting to database server on $node.\n";
+  }
 
   if (!defined $dbh)
   {
@@ -1047,6 +1059,7 @@ sub config
     'mysql_user'        => 'root',
     'mysql_password'    => '',
     'mysql_port'        => 3306,
+    'mysql_timeout'     => 120,
     'interface'         => 'UNCONFIGURED',
     'read_interface'    => undef,
     'write_interface'   => undef,

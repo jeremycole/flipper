@@ -61,6 +61,7 @@ rm -rf %{buildroot}
 /usr/lib/perl5/site_perl/Flipper/Metadata/CSV.pm
 /usr/lib/perl5/site_perl/Flipper/Metadata/DBI.pm
 /usr/lib/perl5/site_perl/Flipper/Metadata/Dummy.pm
+/usr/lib/perl5/site_perl/Flipper/Metadata/YAML.pm
 /usr/lib/perl5/site_perl/Flipper/Quiesce.pm
 /usr/lib/perl5/site_perl/Flipper/Quiesce/KillAll.pm
 
