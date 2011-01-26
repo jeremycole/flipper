@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2010, Proven Scaling LLC
+# Copyright (c) 2007-2011, Proven Scaling LLC and others
 # Copyright (c) 2010, Michael Maraist
 # 
 # This library is free software; you can redistribute it and/or
