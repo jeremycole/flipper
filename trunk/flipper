@@ -965,6 +965,14 @@ sub node_ssh_command
     $ssh_user = '';
   }
 
+  my $ssh_identity_file = $rh_options->{identity};
+  if (defined $ssh_identity_file) {
+    $ssh_identity_file = "-i $ssh_identity_file";
+  } else {
+    $ssh_identity_file = '';
+  }
+  
+
   # If the ssh_ip node variable is set, use that to ssh to the host.
   # Useful if ssh bound to different IP than mysql.
   my $ssh_ip = defined $rhh_nodes_info->{$node}->{ssh_ip} ? $rhh_nodes_info->{$node}->{ssh_ip} : $rhh_nodes_info->{$node}->{ip};
@@ -982,10 +990,13 @@ sub node_ssh_command
   print "DEBUG:  Executing ssh $ssh_user $ssh_ip $command\n" if $rh_options->{debug};
   # TODO:  Error reporting can be improved here by using IPC::Open3 to
   # capture STDERR as well as STDOUT from the external ssh command
-  my $result = `ssh -q -t -o "ConnectTimeout 10" $ssh_user $ssh_ip $command`;
+  my $cmd = sprintf("ssh -q -t -o \"ConnectTimeout 10\" %s %s %s %s",
+                    $ssh_identity_file, $ssh_user, $ssh_ip, $command);
+
+  my $result = `$cmd`;
   if ($?)
   {
-    print "ERROR:  Error occurred when executing ssh $ssh_user $ssh_ip $command\n";
+    print "ERROR:  Error occurred when executing ssh: $cmd\n";
     return;
   } else {
     return $result;  
@@ -1113,7 +1124,13 @@ sub parse_options
     'verbose|v',
     'debug|d',
     'yes|y',
+    'identity|i=s',
   );
+
+  if (exists $rh_options->{identity} &&
+      ! -f $rh_options->{identity}) {
+    HelpMessage(-exitval => 2, -msg => "ERROR:  Identity file not found");
+  }
 
   # At this stage, we MUST have a DSN for metadata, so raise an error
   # if we haven't got one.
@@ -1198,6 +1215,7 @@ Options:
   --password, -p    Password for connection to metadata
   --yes, -y         Yes, go ahead with potentially
                     dangerous operations
+  --identity, -i    SSH identity file
 
 Options can also be specified in a C<flipper> section of my.cnf.
 
