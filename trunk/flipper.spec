@@ -46,6 +46,7 @@ mkdir -p %{buildroot}/usr/lib/perl5/site_perl/Flipper/Metadata
 install -m 0644 lib/Flipper/Metadata/CSV.pm %{buildroot}/usr/lib/perl5/site_perl/Flipper/Metadata/
 install -m 0644 lib/Flipper/Metadata/DBI.pm %{buildroot}/usr/lib/perl5/site_perl/Flipper/Metadata/
 install -m 0644 lib/Flipper/Metadata/Dummy.pm %{buildroot}/usr/lib/perl5/site_perl/Flipper/Metadata/
+install -m 0644 lib/Flipper/Metadata/YAML.pm %{buildroot}/usr/lib/perl5/site_perl/Flipper/Metadata/
 
 mkdir -p %{buildroot}/usr/lib/perl5/site_perl/Flipper/Quiesce
 install -m 0644 lib/Flipper/Quiesce/KillAll.pm %{buildroot}/usr/lib/perl5/site_perl/Flipper/Quiesce/
