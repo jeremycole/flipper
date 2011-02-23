@@ -29,7 +29,7 @@ if (scalar @ARGV > 0 && $ARGV[0] eq '-c')
 
 if ($command =~ m%uname -s;(?:/sbin/|/usr/sbin/)?ifconfig -a$%
   or $command =~ m%sudo (?:/sbin/|/usr/sbin/)?ifconfig [^;]+$%
-  or $command =~ m%sudo (?:/sbin|/usr/sbin/)?arping [^;]+$%)
+  or $command =~ m%sudo (?:/sbin/|/usr/sbin/)?arping [^;]+$%)
 {
   syslog('info', "Allowing command: $command");
   closelog();
