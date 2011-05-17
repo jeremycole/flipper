@@ -736,9 +736,20 @@ sub sync_replication
   my $slave_dbh  = get_node_dbh($slave_node);
   my $master_sth = $master_dbh->prepare("SHOW MASTER STATUS");
   my $slave_sth  = $slave_dbh->prepare("SHOW SLAVE STATUS");
+
   $master_sth->execute;
+  if ($master_sth->rows == 0) {
+      die("INTERNAL ERROR: bin logging not enabled on master");
+  }
+
   my $master_status = $master_sth->fetchrow_hashref;
   print "Master:  File $master_status->{File} Position $master_status->{Position}\n" if $rh_options->{debug};
+
+  $slave_sth->execute;
+  if ($slave_sth->rows == 0) {
+      die("INTERNAL ERROR: replication is not configured; SHOW SLAVE STATUS returned no rows");
+  }
+  my $slave_status = $slave_sth->fetchrow_hashref;
 
   # TODO: extend this to optionally use Time::HiRes if available (now part of core as of 5.8.7)
   my $retry_limit = 10;
@@ -746,9 +757,11 @@ sub sync_replication
   while($retry_count < $retry_limit)
   {
     $slave_sth->execute;
-    my $slave_status = $slave_sth->fetchrow_hashref;
+    $slave_status = $slave_sth->fetchrow_hashref;
+    
     print "Slave: File $slave_status->{Relay_Master_Log_File} Position $slave_status->{Exec_Master_Log_Pos}\n" if $rh_options->{debug};
-    if($master_status->{File} eq $slave_status->{Relay_Master_Log_File} && $master_status->{Position} == $slave_status->{Exec_Master_Log_Pos})
+    if($master_status->{File} eq $slave_status->{Relay_Master_Log_File} && 
+       $master_status->{Position} == $slave_status->{Exec_Master_Log_Pos})
     {
       return 1;
     }
