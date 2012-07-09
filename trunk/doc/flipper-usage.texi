@@ -80,6 +80,8 @@ $
 
 Warnings will be displayed if there are any problems:
 
+There is also a @command{quick_status} which will output only the read_only flag state of each of the read and write ips. This is useful for a basic status check to see if the ips are setup in different hosts and there is a writable and read only ips. quick_status will not use ssh where status requires ssh. 
+
 @itemize @bullet
 @item Any IP is up on more than one node, or not up on any node
 @item Replication isn't running

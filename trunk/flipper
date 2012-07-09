@@ -57,14 +57,15 @@ my $rhh_nodes_ip_info;
 # Execute command
 # TODO:  change command despatch to use a hashref of command name => sub name
 if (0) {}
-elsif ($command eq 'config')    { config_command();    }
-elsif ($command eq 'status')    { status_command();    }
-elsif ($command eq 'swap')      { swap_command();      }
-elsif ($command eq 'set')       { set_command();       }
-elsif ($command eq 'disable')   { disable_command();   }
-elsif ($command eq 'fail')      { fail_command();      }
-elsif ($command eq 'ipdown')    { ipdown_command();    }
-elsif ($command eq 'ipup')      { ipup_command();      }
+elsif ($command eq 'config')        { config_command();    }
+elsif ($command eq 'status')        { status_command();    }
+elsif ($command eq 'quick_status')  { quick_status_command();    }
+elsif ($command eq 'swap')          { swap_command();      }
+elsif ($command eq 'set')           { set_command();       }
+elsif ($command eq 'disable')       { disable_command();   }
+elsif ($command eq 'fail')          { fail_command();      }
+elsif ($command eq 'ipdown')        { ipdown_command();    }
+elsif ($command eq 'ipup')          { ipup_command();      }
 else {
   # display an error if the command isn't recognised
   HelpMessage(-exitval => 2, -msg => "ERROR:  The specified command does not exist.\n");
@@ -344,6 +345,43 @@ sub config_command
   }
 }
 
+sub read_only_state
+{
+  my $node_dbh = shift;
+
+  return $node_dbh->selectrow_array('SELECT @@read_only');
+}
+
+sub quick_status_print
+{
+    my $host = shift;
+    my $node_dbh = shift;
+    my $state = '';
+
+    if (read_only_state($node_dbh) eq '0') 
+    {
+       $state = 'writeable'; 
+    } 
+    else 
+    {
+       $state = 'read_only';
+    }
+
+    print "ip $host is $state on " . $node_dbh->selectrow_array('SELECT @@hostname') . "\n";
+}
+
+sub quick_status_command
+{
+  print "MASTERPAIR: $masterpair\n";
+  my $read_ip = $rh_masterpair_info->{read_ip};
+  my $write_ip = $rh_masterpair_info->{write_ip};
+  my $node_dbh = get_mysql_dbh($write_ip);
+  quick_status_print($write_ip, $node_dbh);
+  $node_dbh = get_mysql_dbh($read_ip);
+  quick_status_print($read_ip, $node_dbh);
+
+}
+
 sub status_command
 {
   print "MASTERPAIR: $masterpair\n";
@@ -386,7 +424,7 @@ sub status_command
       }
       if (defined $node_dbh)
       {
-        my ($read_only) = $node_dbh->selectrow_array('SELECT @@read_only');
+        my ($read_only) = read_only_state($node_dbh);
         if ($read_only)
         {
           push @info, "is read-only";
@@ -1016,17 +1054,13 @@ sub node_ssh_command
   }
 }
 
-sub get_node_dbh
+sub get_mysql_dbh
 {
-  # Return a database handle to the given node.  Uses connect_cached
-  # in order to keep the number of connections tidy and reconnects if
-  # necessary.  Returns undef if no database handle could be created.
-  my $node = shift || die "INTERNAL ERROR:  No node name specified to sub get_node_dbh ";
-  my $user = config('mysql_user', $node);
-  my $password = config('mysql_password', $node);
-  my $port = config('mysql_port', $node);
-  my $timeout = config('mysql_timeout', $node);
-  my $host = $rhh_nodes_info->{$node}->{ip};
+  my $host = shift;
+  my $user = config('mysql_user', $host);
+  my $password = config('mysql_password', $host);
+  my $port = config('mysql_port', $host);
+  my $timeout = config('mysql_timeout', $host);
   my $dbh;
   eval {
     local $SIG{ALRM} = sub { die "timeout\n" };
@@ -1037,16 +1071,25 @@ sub get_node_dbh
   alarm(0);
   if ($@ eq "timeout\n")
   {
-    print "ERROR: Timed out connecting to database server on $node.\n";
+    print "ERROR: Timed out connecting to database server on $host.\n";
   }
 
   if (!defined $dbh)
   {
-    print "ERROR: Couldn't connect to database server on $node.  Error was \"" . $DBI::errstr . "\"\n";
+    print "ERROR: Couldn't connect to database server on $host.  Error was \"" . $DBI::errstr . "\"\n";
     return;
   } else {
     return $dbh;
   }
+}
+
+sub get_node_dbh
+{
+  # Return a database handle to the given node.  Uses connect_cached
+  # in order to keep the number of connections tidy and reconnects if
+  # necessary.  Returns undef if no database handle could be created.
+  my $node = shift || die "INTERNAL ERROR:  No node name specified to sub get_node_dbh ";
+  return get_mysql_dbh($node);
 }
 
 sub other_node
@@ -1235,6 +1278,7 @@ Options can also be specified in a C<flipper> section of my.cnf.
 Commands and Parameters:
 
   config             Show configuration
+  quick_status       Show status of read_only flag
   status             Show status
   swap [<ip>]        Swap node for IP(s)
   set <ip> <node>    Ensures IP is running on node
@@ -1251,6 +1295,10 @@ be listed.
 =head2 config
 
 Displays the configuration for the given masterpair.
+
+=head2 quick_status
+
+Display the status of the read_only flag by connecting through each of the read and write ips.
 
 =head2 status
 
