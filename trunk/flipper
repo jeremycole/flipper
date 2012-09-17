@@ -20,7 +20,7 @@ use strict;
 use Getopt::Long qw( GetOptions HelpMessage VersionMessage :config bundling auto_version auto_help );
 use Data::Dumper;
 use DBI;
-$main::VERSION = "0.2.7";
+$main::VERSION = "0.2.8";
 
 my $rh_options = parse_options();
 my ($masterpair, $command, $ra_parameters) = parse_commandline();
@@ -376,8 +376,10 @@ sub quick_status_command
   my $read_ip = $rh_masterpair_info->{read_ip};
   my $write_ip = $rh_masterpair_info->{write_ip};
   my $node_dbh = get_mysql_dbh($write_ip);
+  print "write ";
   quick_status_print($write_ip, $node_dbh);
   $node_dbh = get_mysql_dbh($read_ip);
+  print "read ";
   quick_status_print($read_ip, $node_dbh);
 
 }
@@ -1041,7 +1043,7 @@ sub node_ssh_command
   print "DEBUG:  Executing ssh $ssh_user $ssh_ip $command\n" if $rh_options->{debug};
   # TODO:  Error reporting can be improved here by using IPC::Open3 to
   # capture STDERR as well as STDOUT from the external ssh command
-  my $cmd = sprintf("ssh -q -t -o \"ConnectTimeout 10\" %s %s %s %s",
+  my $cmd = sprintf("ssh -q -t -t -o \"ConnectTimeout 10\" %s %s %s %s",
                     $ssh_identity_file, $ssh_user, $ssh_ip, $command);
 
   my $result = `$cmd`;
