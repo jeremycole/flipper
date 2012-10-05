@@ -20,7 +20,7 @@ use strict;
 use Getopt::Long qw( GetOptions HelpMessage VersionMessage :config bundling auto_version auto_help );
 use Data::Dumper;
 use DBI;
-$main::VERSION = "0.2.8";
+$main::VERSION = "0.3.0";
 
 my $rh_options = parse_options();
 my ($masterpair, $command, $ra_parameters) = parse_commandline();
