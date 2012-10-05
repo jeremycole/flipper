@@ -88,7 +88,7 @@ sub swap_command
   {
     @ips = ($ip);
   } else {
-    @ips = ('read', 'write');
+    @ips = ('write', 'read');
   }
 
   # Get info on the first node and use that to determine where IPs need
@@ -109,7 +109,11 @@ sub swap_command
       $rh_p->{to} = $nodes[0];
     }
 
-    ipmove($rh_p);
+    if (ipmove($rh_p))
+    {
+        # ipmove will print why it didn't move the ip
+        return 1;
+    }
   }
 
 }
@@ -665,7 +669,7 @@ sub ipmove
         } else {
           print "ERROR: Replication could not be synced.  Write IP won't be moved.\n";
           $from_dbh->do('SET GLOBAL read_only = 0');
-          return;
+          return 1;
         }
       }
     } else {
