@@ -380,11 +380,19 @@ sub quick_status_command
   my $read_ip = $rh_masterpair_info->{read_ip};
   my $write_ip = $rh_masterpair_info->{write_ip};
   my $node_dbh = get_mysql_dbh($write_ip);
-  print "write ";
-  quick_status_print($write_ip, $node_dbh);
+  if (defined $node_dbh) {
+    print "write ";
+    quick_status_print($write_ip, $node_dbh);
+  } else {
+    print "node with write-ip not found\n";
+  }
   $node_dbh = get_mysql_dbh($read_ip);
-  print "read ";
-  quick_status_print($read_ip, $node_dbh);
+  if (defined $node_dbh) {
+    print "read ";
+    quick_status_print($read_ip, $node_dbh);
+  } else {
+    print "node with read-ip not found\n";
+  }
 
 }
 
